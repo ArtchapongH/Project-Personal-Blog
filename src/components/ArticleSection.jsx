@@ -7,7 +7,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { blogPosts } from "@/data/BlogPost";
 
+const categories = ["Highlight", "Cat", "Inspiration", "General"];
 
 function ArticleSection() {
   return (
@@ -45,10 +47,13 @@ function ArticleSection() {
           <SelectValue placeholder="Highlight" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All Categories</SelectItem>
-          <SelectItem value="react">React</SelectItem>
-          <SelectItem value="javascript">JavaScript</SelectItem>
-          <SelectItem value="css">CSS</SelectItem>
+          {/* dynamic dropdown list with array.map */}
+          {
+            categories.map((category, index) => 
+              <SelectItem value={category}>{category}</SelectItem>
+            )
+          }
+          
         </SelectContent>
       </Select>
     </div>
@@ -56,20 +61,20 @@ function ArticleSection() {
     {/* DESKTOP VIEW: Inline Row Layout (Hidden on Mobile) */}
     <div className="hidden sm:flex flex-row items-center justify-between gap-4">
       
-      {/* Category Dropdown */}
+      {/* Category Buttons */}
+
       <div className="flex items-center gap-1">
-        <button className="px-5 py-2 text-sm font-medium text-neutral-800 bg-neutral-200/80 rounded-xl transition-colors">
-          Highlight
-        </button>
-        <button className="px-5 py-2 text-sm font-medium text-neutral-500 hover:text-neutral-800 rounded-xl transition-colors">
-          Cat
-        </button>
-        <button className="px-5 py-2 text-sm font-medium text-neutral-500 hover:text-neutral-800 rounded-xl transition-colors">
-          Inspiration
-        </button>
-        <button className="px-5 py-2 text-sm font-medium text-neutral-500 hover:text-neutral-800 rounded-xl transition-colors">
-          General
-        </button>
+      {/* dynamic buttons with array.map [but how to adjust bg color of only first button]*/}
+      {
+        categories.map((category, index) =>{
+          return(
+          <button className={`px-4 py-3 transition-colors rounded-sm text-sm font-medium ${index === 0 ? 'bg-gray-100' : 'bg-[muted]'}`}>
+            {category}
+          </button>
+          )
+        })
+      }
+
       </div>
 
       {/* Search Input Box */}
@@ -93,28 +98,23 @@ function ArticleSection() {
 
 
   {/* Grid Container: Forces 1 column on mobile, scales to 2 columns on medium screens and up */}
-  
+  {/* why picture link work only the first one */}
   <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12 mt-10">
+  {
+    blogPosts.map((item,index)=>{
+      return(
+        <BlogCard 
+          image={item.image}
+          category={item.category}
+          title={item.title}
+          description={item.description}
+          author={item.author}
+          date={item.date}
+        />
+      )
+    })
+  }
   
-  {/* card 1 */}
-  <BlogCard 
-    image="https://res.cloudinary.com/dcbpjtd1r/image/upload/v1728449771/my-blog-post/e739huvlalbfz9eynysc.jpg"
-    category="Cat"
-    title="Understanding Cat Behavior: Why Your Feline Friend Acts the Way They Do"
-    description="Dive into the curious world of cat behavior, exploring why cats knead, purr, and chase imaginary prey. This article helps pet owners decode their feline's actions and understand how their instincts as hunters shape their daily routines."
-    author="Thompson P."
-    date="11 September 2024"
-  />
-  
-  {/* card 2 */} 
-   <BlogCard 
-    image="https://res.cloudinary.com/dcbpjtd1r/image/upload/v1728449771/my-blog-post/e739huvlalbfz9eynysc.jpg"
-    category="Cat"
-    title="Understanding Cat Behavior: Why Your Feline Friend Acts the Way They Do"
-    description="Dive into the curious world of cat behavior, exploring why cats knead, purr, and chase imaginary prey. This article helps pet owners decode their feline's actions and understand how their instincts as hunters shape their daily routines."
-    author="Thompson P."
-    date="11 September 2024"
-  />
   </div>
 
 
