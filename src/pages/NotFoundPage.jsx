@@ -1,8 +1,13 @@
 
 import { Link } from "react-router-dom";
 
+import NavBar from "../components/NavBar.jsx";
+import Footer from "../components/Footer.jsx";
+
 function NotFoundPage() {
     return (
+        <>
+        <NavBar />
         <div className="bg-white flex min-h-screen flex-col items-center justify-center p-4 font-sans select-none">
 
             <div className="flex flex-col items-center text-center">
@@ -23,6 +28,8 @@ function NotFoundPage() {
             </div>
 
         </div>
+        <Footer />
+        </>
     )
 
 };

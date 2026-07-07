@@ -7,15 +7,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import BlogPosts from "./BlogPosts";
+import SearchResultBox from "./SearchResultBox";
 
 function ArticleSection() {
 
   const categories = ["Highlight", "Cat", "Inspiration", "General"];
   const [category, setCategory] = useState("Highlight");
-
+  const [search, setSearch] = useState("");
+  const [results, setResults] = useState([]);
+  const [titles, setTitles] = useState([]);
+  
   {/*
   
     async function getPosts() {
@@ -29,6 +33,41 @@ function ArticleSection() {
   }, [category]);
 
   */}
+
+  useEffect(() => {
+    async function getResults(search) {
+      if (search.trim() === "") {
+        setResults([]);
+        setTitles([]);
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          `https://blog-post-project-api.vercel.app/posts?keywords=${search}`
+        );
+        
+        // Store all posts
+        setResults(response.data.posts || []);
+        
+        // Extract only titles from posts
+        const postTitles = (response.data.posts || []).map((post) => post.title);
+        setTitles(postTitles);
+      } catch (error) {
+        console.error("Error fetching search results:", error);
+        setResults([]);
+        setTitles([]);
+      }
+    }
+
+    // Debounce the search to avoid too many API calls
+    const timeoutId = setTimeout(() => {
+      getResults(search);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [search]);
+
 
   return (
 
@@ -49,6 +88,8 @@ function ArticleSection() {
               type="text"
               placeholder="Search"
               className="w-full"
+              value={search}
+              onChange={(e)=>setSearch(e.target.value)}
             />
 
             {/* Search Icon */}
@@ -57,6 +98,11 @@ function ArticleSection() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
               </svg>
             </div>
+
+            {/* Search Results Dropdown */}
+            {search && titles.length > 0 && (
+              <SearchResultBox titles={titles} />
+            )}
           </div>
 
           {/* Category Selector Dropdown */}
@@ -109,6 +155,8 @@ function ArticleSection() {
               type="text"
               placeholder="Search"
               className="flex-1"
+              value={search}
+              onChange={(e)=>setSearch(e.target.value)}
             />
             {/* Search Icon */}
             <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
@@ -116,6 +164,11 @@ function ArticleSection() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
               </svg>
             </div>
+
+            {/* Search Results Dropdown */}
+            {search && titles.length > 0 && (
+              <SearchResultBox titles={titles} />
+            )}
           </div>
 
         </div>
