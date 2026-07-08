@@ -17,7 +17,6 @@ function ArticleSection() {
   const categories = ["Highlight", "Cat", "Inspiration", "General"];
   const [category, setCategory] = useState("Highlight");
   const [search, setSearch] = useState("");
-  const [results, setResults] = useState([]);
   const [titles, setTitles] = useState([]);
   
   {/*
@@ -37,7 +36,6 @@ function ArticleSection() {
   useEffect(() => {
     async function getResults(search) {
       if (search.trim() === "") {
-        setResults([]);
         setTitles([]);
         return;
       }
@@ -47,15 +45,11 @@ function ArticleSection() {
           `https://blog-post-project-api.vercel.app/posts?keywords=${search}`
         );
         
-        // Store all posts
-        setResults(response.data.posts || []);
-        
         // Extract only titles from posts
         const postTitles = (response.data.posts || []).map((post) => post.title);
         setTitles(postTitles);
       } catch (error) {
         console.error("Error fetching search results:", error);
-        setResults([]);
         setTitles([]);
       }
     }

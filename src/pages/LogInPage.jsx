@@ -1,4 +1,77 @@
+import { useState } from 'react'
+import '../App.css'
+
 function LogInPage(){
+
+    const [form, setForm] = useState({
+            Email: "",
+            Password: ""
+        });
+    
+        const [formErr, setFormErr] = useState({
+            Email: "",
+            Password: ""
+        });
+    
+            function ValidateForm(){
+                let isValid = true;
+                let errors = {
+                    Email: "",
+                    Password: "",
+                };
+                
+    
+                if(!form.Email){
+                    errors.Email = "โปรดใส่อีเมลของคุณ";
+                    isValid=false;
+                }
+    
+                if(form.Email && !IsValidEmail(form.email)){
+                    errors.Email = "รูปแบบอีเมลไม่ถูกต้อง";
+                    isValid=false;
+                }
+                
+                setFormErr(errors);
+                return isValid;
+    
+        };
+    
+    
+        const handleChange = (event) => {
+            const { name, value } = event.target;
+    
+            setForm({
+            ...form,
+            [name]: value,
+            });
+        };
+    
+        {/*
+        const handleReset = () => {
+            setForm({
+            name: "",
+            email: "",
+            movie: "",
+            comment: "",
+            });
+            setFormErr({
+            name: "",
+            email: "",
+            movie: "",
+            comment: "",
+            });
+        };
+        */}
+    
+        const handleSubmit = (event) => {
+            event.preventDefault();
+            if(!ValidateForm()){
+                return;
+            }
+            onSubmit(form);
+        };
+    
+
     return(
         <>
         <div className="bg-white min-h-screen flex items-center justify-center p-6">
@@ -23,7 +96,7 @@ function LogInPage(){
                 </h1>
 
                 {/* Form */}
-                <form className="space-y-5">
+                <form className="space-y-5" onSubmit={handleSubmit}>
 
                     {/* Email */}
                     <div>
@@ -35,8 +108,9 @@ function LogInPage(){
 
                         <input
                             id="email"
-                            type="email"
-                            value="moodeng.cute@gmail.com"
+                            type="text"
+                            value={form.Email}
+                            onChange={handleChange}
                             className="w-full h-12 md:h-14 rounded-lg border border-gray-300 bg-white px-4 text-sm md:text-base outline-none focus:ring-2 focus:ring-gray-400 transition"
                         />
                     </div>
@@ -52,7 +126,8 @@ function LogInPage(){
                         <input
                             id="password"
                             type="password"
-                            value="password"
+                            value={form.Password}
+                            onChange={handleChange}
                             className="w-full h-12 md:h-14 rounded-lg border border-gray-300 bg-white px-4 text-sm md:text-base outline-none focus:ring-2 focus:ring-gray-400 transition"
                         />
                     </div>
