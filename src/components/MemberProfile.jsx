@@ -1,4 +1,12 @@
+import { toast } from "sonner"
+
 function MemberProfile(){
+    const handleSave = () => {
+        toast.success("Saved profile", {
+            description: "Your profile has been successfully updated",
+        });
+    };
+
     return(
         <>
         <div className="bg-stone-50 min-h-screen flex flex-col font-sans text-stone-800 antialiased">
@@ -6,7 +14,7 @@ function MemberProfile(){
             {/* Mobile View - Only shown on mobile */}
             <div className="md:hidden">
                 {/* Mobile Header */}
-                <div className="w-full bg-[#FCFBF8] shadow-lg overflow-hidden">
+                <div className="w-full bg-[#FAF9F7] shadow-lg overflow-hidden">
                     {/* Top Navigation */}
                     <div className="border-b border-gray-200">
                         <div className="flex">
@@ -129,6 +137,7 @@ function MemberProfile(){
                         </div>
 
                         <button
+                            onClick={handleSave}
                             className="mt-3 w-full md:w-40 py-3 rounded-full bg-[#2E2723] text-white font-medium hover:bg-black transition">
                             Save
                         </button>
@@ -250,7 +259,8 @@ function MemberProfile(){
                             {/* Save Button */}
                             <div className="pt-2">
                                 <button 
-                                    type="submit" 
+                                    type="button"
+                                    onClick={handleSave}
                                     className="px-6 py-3 bg-[#231f1d] hover:bg-stone-800 text-stone-100 font-medium rounded-full shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-900"
                                 >
                                     Save

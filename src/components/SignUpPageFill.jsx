@@ -52,6 +52,11 @@ function SignUpPageFill({ onSubmit }){
                 isValid=false;
             }
             
+            if(form.Password && (form.Password.length<5)){
+                errors.Password = "Password need at least 5 characters";
+                isValid=false;
+            }
+
             setFormErr(errors);
             return isValid;
 
@@ -119,10 +124,11 @@ function SignUpPageFill({ onSubmit }){
                                 name="Name"
                                 value={form.Name}
                                 onChange={handleChange}
-                                className="w-full rounded-md border border-gray-300 px-4 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-black"
-                                style={{
-                                    borderColor: formErr.Name ? 'red' : '#ddd'
-                                }}
+                                className={`w-full rounded-md px-4 py-2.5 bg-white focus:outline-none focus:ring-2 ${
+                                    formErr.Name 
+                                        ? 'border-2 border-red-500 focus:ring-red-500' 
+                                        : 'border border-gray-300 focus:ring-black'
+                                }`}
                             />
                             <ErrorMessage errorMessage={formErr.Name} />
                         </div>
@@ -137,10 +143,11 @@ function SignUpPageFill({ onSubmit }){
                                 name="Username"
                                 value={form.Username}
                                 onChange={handleChange}
-                                className="w-full rounded-md border border-gray-300 px-4 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-black"
-                                style={{
-                                    borderColor: formErr.Username ? 'red' : '#ddd'
-                                }}
+                                className={`w-full rounded-md px-4 py-2.5 bg-white focus:outline-none focus:ring-2 ${
+                                    formErr.Username 
+                                        ? 'border-2 border-red-500 focus:ring-red-500' 
+                                        : 'border border-gray-300 focus:ring-black'
+                                }`}
                             />
                             <ErrorMessage errorMessage={formErr.Username} />
                         </div>
@@ -156,10 +163,11 @@ function SignUpPageFill({ onSubmit }){
                                 name="Email"
                                 value={form.Email}
                                 onChange={handleChange}
-                                className="w-full rounded-md border px-4 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-black"
-                                style={{
-                                    borderColor: formErr.Email ? 'red' : '#ddd'
-                                }}
+                                className={`w-full rounded-md px-4 py-2.5 bg-white focus:outline-none focus:ring-2 ${
+                                    formErr.Email 
+                                        ? 'border-2 border-red-500 focus:ring-red-500' 
+                                        : 'border border-gray-300 focus:ring-black'
+                                }`}
                             />
                             <ErrorMessage errorMessage={formErr.Email} />
                             
@@ -176,10 +184,11 @@ function SignUpPageFill({ onSubmit }){
                                 name="Password"
                                 value={form.Password}
                                 onChange={handleChange}
-                                className="w-full rounded-md border border-gray-300 px-4 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-black"
-                                style={{
-                                    borderColor: formErr.Password ? 'red' : '#ddd'
-                                }}
+                                className={`w-full rounded-md px-4 py-2.5 bg-white focus:outline-none focus:ring-2 ${
+                                    formErr.Password 
+                                        ? 'border-2 border-red-500 focus:ring-red-500' 
+                                        : 'border border-gray-300 focus:ring-black'
+                                }`}
                             />
                             <ErrorMessage errorMessage={formErr.Password} />
                         </div>
@@ -199,7 +208,7 @@ function SignUpPageFill({ onSubmit }){
                     {/* Login */}
                     <div className="text-center mt-8 text-gray-600 text-sm">
                         Already have an account?
-                        <a href="#" className="font-semibold text-black underline ml-1">
+                        <a href="/login" className="font-semibold text-black underline ml-1">
                             Log in
                         </a>
                     </div>

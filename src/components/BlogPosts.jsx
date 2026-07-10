@@ -9,19 +9,19 @@ function BlogPosts({ category }) {
     const [isLoading, setIsLoading] = useState(false);
 
     // ฟังก์ชันสำหรับโหลดข้อมูล
-    const fetchPosts = async () => {
+    const fetchPosts = async (pageNum, currentCategory) => {
         // ป้องกันการโหลดซ้ำถ้ายังโหลดไม่เสร็จ
         if (isLoading) return;
 
         setIsLoading(true);
         try {
-            const categoryParam = category === "Highlight" ? "" : category;
+            const categoryParam = currentCategory === "Highlight" ? "" : currentCategory;
 
             const response = await axios.get(
                 "https://blog-post-project-api.vercel.app/posts",
                 {
                     params: {
-                        page: page,
+                        page: pageNum,
                         limit: 6,
                         category: categoryParam,
                     },
@@ -29,11 +29,19 @@ function BlogPosts({ category }) {
             );
 
             // รวมโพสต์ใหม่กับโพสต์เดิม
-            setPosts((prevPosts) => [...prevPosts, ...response.data.posts]);
+            if (pageNum === 1) {
+                // ถ้าเป็นหน้าแรก ให้เซ็ตใหม่เลย (ไม่รวมกับข้อมูลเก่า)
+                setPosts(response.data.posts);
+            } else {
+                // ถ้าเป็นหน้าถัดไป ให้เพิ่มต่อท้าย
+                setPosts((prevPosts) => [...prevPosts, ...response.data.posts]);
+            }
 
             // ตรวจสอบว่าถึงหน้าสุดท้ายหรือยัง
             if (response.data.currentPage >= response.data.totalPages) {
                 setHasMore(false);
+            } else {
+                setHasMore(true);
             }
         } catch (error) {
             console.error("Error fetching posts:", error);
@@ -42,17 +50,19 @@ function BlogPosts({ category }) {
         }
     };
 
-    // โหลดโพสต์ใหม่เมื่อ page หรือ category เปลี่ยน
+    // รีเซ็ตและโหลดโพสต์ใหม่เมื่อเปลี่ยน category
     useEffect(() => {
-        fetchPosts();
-    }, [page, category]);
-
-    // รีเซ็ตโพสต์เมื่อเปลี่ยน category
-    useEffect(() => {
-        setPosts([]);
         setPage(1);
         setHasMore(true);
+        fetchPosts(1, category);
     }, [category]);
+
+    // โหลดโพสต์เมื่อ page เปลี่ยน (และไม่ใช่หน้าแรก)
+    useEffect(() => {
+        if (page > 1) {
+            fetchPosts(page, category);
+        }
+    }, [page]);
 
     // ฟังก์ชันเพิ่มหน้า
     const handleLoadMore = () => {

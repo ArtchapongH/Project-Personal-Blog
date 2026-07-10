@@ -1,14 +1,18 @@
+import { useNavigate } from "react-router-dom";
+
 function ArticleManagementPage(){
+    const navigate = useNavigate();
+    
     return(
         <>
 
 
-<div className="bg-[#faf8f5] font-sans">
+<div className="bg-[#FBFBFA] font-sans">
 
 <div className="flex h-screen">
 
     {/* ================= Sidebar ================= */}
-    <aside className="w-64 bg-[#F5F3F0] border-r border-[#e7e3dd] flex flex-col">
+    <aside className="w-64 bg-[#FBFBFA] border-r border-[#e7e3dd] flex flex-col">
 
         {/* Logo */}
         <div className="px-8 py-10">
@@ -24,52 +28,69 @@ function ArticleManagementPage(){
         {/* Navigation */}
         <nav className="flex-1">
 
-            <a href="#"
-               className="flex items-center gap-3 px-8 py-4 bg-[#E9E5E0] text-gray-900 text-sm font-medium">
+            <button 
+                onClick={() => navigate("/admin/article/mgt")}
+                className="flex items-center gap-3 px-8 py-4 bg-[#E9E5E0] text-gray-900 text-sm font-medium w-full text-left"
+            >
                 <i data-lucide="file-text" className="w-4 h-4"></i>
                 Article management
-            </a>
+            </button>
 
-            <a href="#"
-               className="flex items-center gap-3 px-8 py-4 text-gray-500 hover:bg-gray-100 text-sm">
+            <button 
+                onClick={() => navigate("/admin/category/mgt")}
+                className="flex items-center gap-3 px-8 py-4 text-gray-500 hover:bg-gray-100 text-sm w-full text-left"
+            >
                 <i data-lucide="folder" className="w-4 h-4"></i>
                 Category management
-            </a>
+            </button>
 
-            <a href="#"
-               className="flex items-center gap-3 px-8 py-4 text-gray-500 hover:bg-gray-100 text-sm">
+            <button 
+                onClick={() => navigate("/admin/profile")}
+                className="flex items-center gap-3 px-8 py-4 text-gray-500 hover:bg-gray-100 text-sm w-full text-left"
+            >
                 <i data-lucide="user" className="w-4 h-4"></i>
                 Profile
-            </a>
+            </button>
 
-            <a href="#"
-               className="flex items-center gap-3 px-8 py-4 text-gray-500 hover:bg-gray-100 text-sm">
+            <button 
+                onClick={() => navigate("/admin/notification")}
+                className="flex items-center gap-3 px-8 py-4 text-gray-500 hover:bg-gray-100 text-sm w-full text-left"
+            >
                 <i data-lucide="bell" className="w-4 h-4"></i>
                 Notification
-            </a>
+            </button>
 
-            <a href="#"
-               className="flex items-center gap-3 px-8 py-4 text-gray-500 hover:bg-gray-100 text-sm">
+            <button 
+                onClick={() => navigate("/admin/reset")}
+                className="flex items-center gap-3 px-8 py-4 text-gray-500 hover:bg-gray-100 text-sm w-full text-left"
+            >
                 <i data-lucide="key-round" className="w-4 h-4"></i>
                 Reset password
-            </a>
+            </button>
 
         </nav>
 
         {/* Bottom */}
         <div className="border-t">
 
-            <a href="#"
-               className="flex items-center gap-3 px-8 py-4 text-sm text-gray-500">
+            <button 
+                onClick={() => navigate("/")}
+                className="flex items-center gap-3 px-8 py-4 text-sm text-gray-500 w-full text-left hover:bg-gray-100"
+            >
                 <i data-lucide="external-link" className="w-4 h-4"></i>
                 hh.website
-            </a>
+            </button>
 
-            <a href="#"
-               className="flex items-center gap-3 px-8 py-4 text-sm text-gray-500">
+            <button 
+                onClick={() => {
+                    // Add logout logic here
+                    console.log("Logging out...");
+                }}
+                className="flex items-center gap-3 px-8 py-4 text-sm text-gray-500 w-full text-left hover:bg-gray-100"
+            >
                 <i data-lucide="log-out" className="w-4 h-4"></i>
                 Log out
-            </a>
+            </button>
 
         </div>
 
@@ -96,7 +117,7 @@ function ArticleManagementPage(){
         </div>
 
         {/* Content */}
-        <section className="p-10">
+        <section className="p-10 bg-white">
 
             {/* Filters */}
             <div className="flex justify-between items-center mb-5">

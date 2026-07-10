@@ -17,9 +17,10 @@ function ArticleSection() {
   const categories = ["Highlight", "Cat", "Inspiration", "General"];
   const [category, setCategory] = useState("Highlight");
   const [search, setSearch] = useState("");
-  const [titles, setTitles] = useState([]);
+  const [suggestion, setSuggestion] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
   
-  {/*
+  /*
   
     async function getPosts() {
     const response = await axios.get(`https://blog-post-project-api.vercel.app/posts?category=${category}&limit=2`);
@@ -30,38 +31,28 @@ function ArticleSection() {
   useEffect(() => {
     getPosts();
   }, [category]);
+*/
 
-  */}
 
-  useEffect(() => {
-    async function getResults(search) {
-      if (search.trim() === "") {
-        setTitles([]);
-        return;
-      }
-
-      try {
-        const response = await axios.get(
-          `https://blog-post-project-api.vercel.app/posts?keywords=${search}`
-        );
-        
-        // Extract only titles from posts
-        const postTitles = (response.data.posts || []).map((post) => post.title);
-        setTitles(postTitles);
-      } catch (error) {
-        console.error("Error fetching search results:", error);
-        setTitles([]);
-      }
-    }
-
-    // Debounce the search to avoid too many API calls
-    const timeoutId = setTimeout(() => {
-      getResults(search);
-    }, 300);
+  useEffect(()=>{
+    
+      const fetchSuggestions = async () =>{
+        try{
+          const response = await axios.get(`https://blog-post-project-api.vercel.app/posts?keyword=${search}`)
+          setSuggestion(response.data.posts);
+        } catch(error) {
+           console.error("Error fetching search results:", error);
+        };
+      };
+      
+      // Debounce the search to avoid too many API calls
+      const timeoutId = setTimeout(() => {
+         fetchSuggestions();
+      }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [search]);
 
+  },[search]);
 
   return (
 
@@ -94,8 +85,10 @@ function ArticleSection() {
             </div>
 
             {/* Search Results Dropdown */}
-            {search && titles.length > 0 && (
-              <SearchResultBox titles={titles} />
+            {search && suggestion.length > 0 && (
+              <SearchResultBox
+                suggestion={suggestion}
+              />
             )}
           </div>
 
@@ -111,7 +104,7 @@ function ArticleSection() {
               {/* dynamic dropdown list with array.map */}
               {
                 categories.map((cat) =>
-                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  <SelectItem key={cat} value={cat} onClick>{cat}</SelectItem>
                 )
               }
 
@@ -160,8 +153,10 @@ function ArticleSection() {
             </div>
 
             {/* Search Results Dropdown */}
-            {search && titles.length > 0 && (
-              <SearchResultBox titles={titles} />
+            {search && suggestion.length > 0 && (
+              <SearchResultBox
+                suggestion={suggestion}
+              />
             )}
           </div>
 

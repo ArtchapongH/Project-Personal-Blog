@@ -160,7 +160,7 @@ function LogInPage(){
                 <div className="mt-8 text-center text-sm md:text-base text-gray-600">
                     Don't have any account?
                     <a
-                        href="#"
+                        href="/signup"
                         className="font-medium text-[#2B2521] underline hover:text-black transition">
                         Sign up
                     </a>

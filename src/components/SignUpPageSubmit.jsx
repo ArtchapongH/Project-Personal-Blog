@@ -1,4 +1,12 @@
+import { useNavigate } from 'react-router-dom';
+
 function SignUpPageSubmit(){
+
+    const navigate = useNavigate();
+    function handleContinueClick(){
+        navigate("/");
+    };
+
     return(
         <>
         
@@ -38,6 +46,7 @@ function SignUpPageSubmit(){
 
                     {/* Button */}
                     <button
+                        onClick={handleContinueClick}
                         className="mt-10
                             w-full max-w-[180px]
                             bg-[#2E2824]

@@ -7,7 +7,7 @@ function ArticleCreatePage(){
 <div className="flex h-screen">
 
     {/* ================= Sidebar ================= */}
-    <aside className="w-64 bg-[#F5F3F0] border-r border-[#E7E3DD] flex flex-col">
+    <aside className="w-64 bg-[#FBFBFA] border-r border-[#E7E3DD] flex flex-col">
 
         {/* Logo */}
         <div className="px-8 py-8">
@@ -75,7 +75,7 @@ function ArticleCreatePage(){
     </aside>
 
     {/* ================= Main ================= */}
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto bg-white">
 
         {/* Header */}
         <div className="h-20 bg-white border-b px-10 flex items-center justify-between">
@@ -101,7 +101,7 @@ function ArticleCreatePage(){
         </div>
 
         {/* Form */}
-        <div className="max-w-5xl px-10 py-8">
+        <div className="max-w-5xl px-10 py-8 bg-white">
 
             {/* Thumbnail */}
             <label className="block text-xs text-gray-500 mb-3">
@@ -111,7 +111,7 @@ function ArticleCreatePage(){
             <div className="flex items-center gap-6 mb-6">
 
                 <div
-                    className="w-52 h-36 bg-[#F4F2EF] border rounded flex items-center justify-center">
+                    className="w-52 h-36 bg-[#FBFBFA] border rounded flex items-center justify-center">
 
                     <i data-lucide="image"
                        className="w-7 h-7 text-gray-400"></i>

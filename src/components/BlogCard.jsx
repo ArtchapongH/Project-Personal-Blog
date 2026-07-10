@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
+import formatDate from "@/utils/FormatDate";
 
 function BlogCard(props) {
   const postLink = props.postLink ?? `/post/${props.id}`;
 
 
   // Helper function to format the date
+  /*
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -14,6 +16,7 @@ function BlogCard(props) {
       year: "numeric",
     });
   };
+  */
 
   return (
     <div className="flex flex-col gap-4">

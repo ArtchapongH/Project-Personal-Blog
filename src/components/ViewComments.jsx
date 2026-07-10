@@ -1,26 +1,71 @@
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { X } from "lucide-react";
+
 function ViewComments() {
     return (
-        <>
+        <div className="bg-white mt-8 mb-8">
 
             {/* Comments */}
-            <div className="bg-[#f6f3ee] px-5 py-5">
+            <div className="px-5 py-5">
 
-                <h4 className="font-semibold text-gray-700">
-                    Comment
-                </h4>
+                 <form className="mt-8 sm:mt-9">
+                    <label htmlFor="comment" className="text-xl font-semibold text-[#6f6962] sm:text-lg sm:font-bold sm:text-gray-950">
+                        Comment
+                    </label>
 
-                <textarea
-                    className="mt-3 w-full rounded-xl border border-gray-300 p-3 text-sm resize-none bg-white"
-                    rows="3"
-                    placeholder="What are your thoughts?"></textarea>
+                    <textarea
+                        id="comment"
+                        placeholder="What are your thoughts?"
+                        className="mt-2 h-29 w-full resize-none rounded-lg border border-gray-300 px-4 py-4 text-xl font-semibold text-gray-900 placeholder:text-[#6f6962] focus:border-gray-900 focus:outline-none sm:mt-4 sm:h-20 sm:rounded-xl sm:border-gray-500 sm:py-3 sm:text-sm sm:font-normal sm:placeholder:text-gray-500"
+                    />
 
-                <button
-                    className="mt-3 bg-black text-white px-6 py-2 rounded-full text-sm">
-                    Send
-                </button>
+                    <div className="mt-4 flex justify-start sm:mt-2 sm:justify-end">
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <button
+                                    type="button"
+                                    className="rounded-full bg-[#25211c] px-11 py-4 text-lg font-semibold text-white transition-colors hover:bg-gray-800 sm:bg-black sm:px-8 sm:py-2.5 sm:text-sm"
+                                >
+                                    Send
+                                </button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="max-w-md">
+                                <AlertDialogCancel className="absolute right-4 top-4 h-8 w-8 rounded-sm border-0 bg-transparent p-0 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-0 disabled:pointer-events-none">
+                                    <X className="h-4 w-4" />
+                                    <span className="sr-only">Close</span>
+                                </AlertDialogCancel>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle className="text-center text-2xl font-bold">
+                                        Create an account to continue
+                                    </AlertDialogTitle>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter className="flex-col gap-3 sm:flex-col">
+                                    <AlertDialogAction className="w-full rounded-full bg-black py-6 text-base font-semibold hover:bg-gray-800">
+                                        Create account
+                                    </AlertDialogAction>
+                                    <div className="text-center text-sm text-gray-600">
+                                        Already have an account?{' '}
+                                        <a href="#" className="font-semibold text-black underline hover:text-gray-700">
+                                            Log in
+                                        </a>
+                                    </div>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </div>
+                </form>
 
                 {/* Comment 1 */}
-                <div className="mt-8 flex gap-3">
+                <div className="mt-8 mb-8 flex gap-3">
 
                     <img
                         src="https://i.pravatar.cc/80?img=15"
@@ -46,6 +91,7 @@ function ViewComments() {
                     </div>
 
                 </div>
+                <hr></hr>
 
                 {/* Comment 2 */}
                 <div className="mt-6 flex gap-3">
@@ -77,7 +123,7 @@ function ViewComments() {
 
             </div>
 
-        </>
+        </div>
     )
 
 

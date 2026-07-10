@@ -3,6 +3,7 @@ import axios from "axios";
 import ReactMarkdown from "react-markdown";
 import { useParams } from "react-router-dom";
 import { blogPosts } from "../data/BlogPost";
+import formatDate from "@/utils/FormatDate";
 
 function ViewContent() {
     const category = "Highlight";
@@ -120,15 +121,23 @@ function ViewContent() {
                 {!isLoading && post && (
                     <>
                         <article>
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3 mb-4">
                                 <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
                                     {post.category}
                                 </span>
 
                                 <span className="text-xs text-gray-500">
-                                    {post.date}
+                                    {formatDate(post.date)}
                                 </span>
                             </div>
+
+                            <h1 className="text-3xl font-bold text-gray-900 mb-4 lg:text-4xl">
+                                {post.title}
+                            </h1>
+                            
+                            <p className="text-base text-gray-600 leading-relaxed mb-8 lg:text-lg">
+                                {post.description}
+                            </p>
 
                             <div className="markdown">
                                 <ReactMarkdown>{post.content}</ReactMarkdown>

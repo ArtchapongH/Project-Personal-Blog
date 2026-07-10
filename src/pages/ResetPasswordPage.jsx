@@ -1,3 +1,15 @@
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { X } from "lucide-react";
+
 function ResetPasswordPage(){
     return (
         <>
@@ -79,12 +91,38 @@ function ResetPasswordPage(){
                     </div>
 
                     <div className="pt-2">
-                        <button 
-                            type="submit" 
-                            className="px-6 py-3 bg-[#231f1d] hover:bg-stone-800 text-stone-100 font-medium rounded-full shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-900"
-                        >
-                            Reset password
-                        </button>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <button 
+                                    type="button" 
+                                    className="px-6 py-3 bg-[#231f1d] hover:bg-stone-800 text-stone-100 font-medium rounded-full shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-900"
+                                >
+                                    Reset password
+                                </button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="max-w-md">
+                                <AlertDialogCancel className="absolute right-4 top-4 h-8 w-8 rounded-sm border-0 bg-transparent p-0 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-0 disabled:pointer-events-none">
+                                    <X className="h-4 w-4" />
+                                    <span className="sr-only">Close</span>
+                                </AlertDialogCancel>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle className="text-center text-xl font-bold">
+                                        Reset password
+                                    </AlertDialogTitle>
+                                </AlertDialogHeader>
+                                <div className="text-center text-sm text-gray-600 py-4">
+                                    Do you want to reset your password?
+                                </div>
+                                <AlertDialogFooter className="flex-row gap-3 sm:flex-row justify-center">
+                                    <AlertDialogCancel className="rounded-full border border-gray-300 px-6 py-2 text-sm font-medium hover:bg-gray-50">
+                                        Cancel
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction className="rounded-full bg-black px-6 py-2 text-sm font-semibold hover:bg-gray-800">
+                                        Reset
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </div>
                 </form>
             </div>
@@ -171,12 +209,38 @@ function ResetPasswordPage(){
                             </div>
 
                             <div className="pt-2">
-                                <button 
-                                    type="submit" 
-                                    className="px-6 py-3 bg-[#231f1d] hover:bg-stone-800 text-stone-100 font-medium rounded-full shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-900"
-                                >
-                                    Reset password
-                                </button>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <button 
+                                            type="button" 
+                                            className="px-6 py-3 bg-[#231f1d] hover:bg-stone-800 text-stone-100 font-medium rounded-full shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-900"
+                                        >
+                                            Reset password
+                                        </button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent className="max-w-md">
+                                        <AlertDialogCancel className="absolute right-4 top-4 h-8 w-8 rounded-sm border-0 bg-transparent p-0 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-0 disabled:pointer-events-none">
+                                            <X className="h-4 w-4" />
+                                            <span className="sr-only">Close</span>
+                                        </AlertDialogCancel>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle className="text-center text-xl font-bold">
+                                                Reset password
+                                            </AlertDialogTitle>
+                                        </AlertDialogHeader>
+                                        <div className="text-center text-sm text-gray-600 py-4">
+                                            Do you want to reset your password?
+                                        </div>
+                                        <AlertDialogFooter className="flex-row gap-3 sm:flex-row justify-center">
+                                            <AlertDialogCancel className="rounded-full border border-gray-300 px-6 py-2 text-sm font-medium hover:bg-gray-50">
+                                                Cancel
+                                            </AlertDialogCancel>
+                                            <AlertDialogAction className="rounded-full bg-black px-6 py-2 text-sm font-semibold hover:bg-gray-800">
+                                                Reset
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
                             </div>
                         </form>
                     </div>
