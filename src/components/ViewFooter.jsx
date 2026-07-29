@@ -10,6 +10,9 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import facebookBlackIcon from "../icons/Facebook_black.png";
+import linkedInBlackIcon from "../icons/LinkedIN_black.png";
+import twitterBlackIcon from "../icons/Twitter_black.png";
 
 
 function ViewFooter() {
@@ -24,6 +27,11 @@ function ViewFooter() {
             // Show success toast
             toast.success("Copied!", {
                 description: "This article has been copied to your clipboard.",
+                style: {
+                    background: "#1878F3",
+                    borderColor: "#1878F3",
+                    color: "#FFFFFF",
+                },
             });
         } catch (err) {
             // Show error toast if copy fails
@@ -46,7 +54,7 @@ function ViewFooter() {
 
     return (
         <section className="bg-white px-3 py-0 sm:px-6 sm:py-8">
-            <div className="bg-[#eeece9] px-3 py-4 sm:rounded-xl sm:px-4 sm:py-3">
+            <div className="bg-[#C5DDFC] px-3 py-4 sm:rounded-xl sm:px-4 sm:py-3">
                 <div className="flex flex-col gap-7 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -93,6 +101,9 @@ function ViewFooter() {
                             <span className="hidden sm:inline">Copy</span>
                         </button>
 
+                        {/* รูปเอามาจากไหน?? */}
+                        {/* Facebook_black.png */}
+                        {/* ใน a tag ข้างใน class อาจจะลบออกได้ */}
                         <a
                             href={facebookShareUrl}
                             target="_blank"
@@ -100,7 +111,7 @@ function ViewFooter() {
                             aria-label="Share on Facebook"
                             className="flex h-14 w-14 items-center justify-center rounded-full border-0 bg-[#1877f2] text-4xl font-bold leading-none text-white sm:h-10 sm:w-10 sm:border sm:border-gray-900 sm:bg-white sm:text-lg sm:text-gray-900"
                         >
-                            f
+                            <img src={facebookBlackIcon} alt="Facebook icon" className="h-full w-full object-contain" />
                         </a>
 
                         <a
@@ -110,7 +121,7 @@ function ViewFooter() {
                             aria-label="Share on LinkedIn"
                             className="flex h-14 w-14 items-center justify-center rounded-full border-0 bg-[#0077b5] text-3xl font-bold leading-none text-white sm:h-10 sm:w-10 sm:border sm:border-gray-900 sm:bg-white sm:text-sm sm:text-gray-900"
                         >
-                            in
+                            <img src={linkedInBlackIcon} alt="LinkedIN icon" className="h-full w-full object-contain" />
                         </a>
 
                         <a
@@ -120,7 +131,7 @@ function ViewFooter() {
                             aria-label="Share on Twitter"
                             className="flex h-14 w-14 items-center justify-center rounded-full border-0 bg-[#55acee] text-3xl font-bold leading-none text-white sm:h-10 sm:w-10 sm:border sm:border-gray-900 sm:bg-white sm:text-lg sm:text-gray-900"
                         >
-                            t
+                            <img src={twitterBlackIcon} alt="Twitter icon" className="h-full w-full object-contain" />
                         </a>
                     </div>
                 </div>

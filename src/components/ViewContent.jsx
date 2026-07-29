@@ -122,7 +122,7 @@ function ViewContent() {
                     <>
                         <article>
                             <div className="flex items-center gap-3 mb-4">
-                                <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+                                <span className="rounded-full bg-[#C5DDFC] px-3 py-1 text-xs font-medium text-white">
                                     {post.category}
                                 </span>
 

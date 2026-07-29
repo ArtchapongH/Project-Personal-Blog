@@ -2,13 +2,13 @@ function AdminLogInPage(){
     return(
         <>
 
-<div className="bg-[#faf9f7] min-h-screen flex items-center justify-center">
+<div className="bg-white min-h-screen flex items-center justify-center">
 
-    <div className="w-full max-w-2xl bg-[#f2efeb] rounded-xl shadow-sm px-16 py-12">
+    <div className="w-full max-w-2xl bg-[#FBFBFA] rounded-xl shadow-sm px-16 py-12">
 
         {/* Heading */}
         <div className="text-center mb-8">
-            <p className="text-[#f4a261] text-sm font-medium">Admin panel</p>
+            <p className="text-[#529AF6] text-sm font-medium">Admin panel</p>
             <h1 className="text-4xl font-bold text-[#2d2a26] mt-1">Log in</h1>
         </div>
 

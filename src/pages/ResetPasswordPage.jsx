@@ -9,8 +9,12 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { X } from "lucide-react";
+import { Link } from "react-router-dom"
+import userDuotoneIcon from "../icons/User_duotone.png"
+import refreshLightIcon from "../icons/Refresh_light.png"
 
 function ResetPasswordPage(){
+
     return (
         <>
         <div className="bg-white min-h-screen flex flex-col font-sans text-stone-800 antialiased">
@@ -20,18 +24,21 @@ function ResetPasswordPage(){
                 {/* Mobile Header */}
                 <div className="bg-white border-b border-stone-200">
                     <div className="max-w-md mx-auto px-4 flex items-center h-12 gap-6 text-sm text-stone-500 font-medium">
-                        <a href="#" className="flex items-center gap-1.5 hover:text-stone-800">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                            </svg>
+                        {/* Profile */}
+                        <Link to="/membership">
+                        <button className="flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 border-black">
+                                <img src={userDuotoneIcon} alt="Profile icon"  className="w-4 h-4 object-contain" />
                             Profile
-                        </a>
-                        <a href="#" className="flex items-center gap-1.5 text-stone-400 border-b-2 border-transparent pointer-events-none">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-3.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
-                            </svg>
+                        </button>
+                        </Link>
+
+                        {/* Reset */}
+                        <Link to="/reset">
+                        <button className="flex items-center gap-2 px-6 py-4 text-sm text-gray-400 hover:text-black transition">
+                            <img src={refreshLightIcon} alt="Reset icon"  className="w-4 h-4 object-contain" />
                             Reset password
-                        </a>
+                        </button>
+                        </Link>
                     </div>
                     
                     <div className="px-6 py-5 flex items-center justify-between border-b border-stone-200/60">
@@ -149,21 +156,17 @@ function ResetPasswordPage(){
                     <aside className="w-64 bg-white p-6">
                         <nav className="space-y-1">
                             <a 
-                                href="#" 
+                                href="/membership" 
                                 className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-stone-600 rounded-lg hover:bg-stone-100 transition-colors"
                             >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                                </svg>
+                                <img src={userDuotoneIcon} alt="Profile icon"  className="w-4 h-4 object-contain" />
                                 Profile
                             </a>
                             <a 
-                                href="#" 
+                                href="/reset" 
                                 className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-stone-900 bg-stone-100 rounded-lg"
                             >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-3.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
-                                </svg>
+                                <img src={refreshLightIcon} alt="Reset icon"  className="w-4 h-4 object-contain" />
                                 Reset password
                             </a>
                         </nav>

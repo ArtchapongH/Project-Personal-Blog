@@ -1,7 +1,11 @@
-import { useState } from 'react'
-import '../App.css'
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import ErrorMessage from '../components/ErrorMessage';
+import IsValidEmail from '../utils/IsValidEmail';
+import '../App.css';
 
-function LogInPage(){
+function LogInPage() {
+    const navigate = useNavigate();
 
     const [form, setForm] = useState({
             Email: "",
@@ -22,12 +26,17 @@ function LogInPage(){
                 
     
                 if(!form.Email){
-                    errors.Email = "โปรดใส่อีเมลของคุณ";
+                    errors.Email = "Please enter your email";
                     isValid=false;
                 }
     
-                if(form.Email && !IsValidEmail(form.email)){
-                    errors.Email = "รูปแบบอีเมลไม่ถูกต้อง";
+                if(form.Email && !IsValidEmail(form.Email)){
+                    errors.Email = "Invalid email format";
+                    isValid=false;
+                }
+
+                if(!form.Password){
+                    errors.Password = "Please enter your password";
                     isValid=false;
                 }
                 
@@ -68,7 +77,7 @@ function LogInPage(){
             if(!ValidateForm()){
                 return;
             }
-            onSubmit(form);
+            navigate('/');
         };
     
 
@@ -101,7 +110,7 @@ function LogInPage(){
                     {/* Email */}
                     <div>
                         <label
-                            for="email"
+                            htmlFor="email"
                             className="block text-sm md:text-base text-gray-600 mb-2">
                             Email
                         </label>
@@ -109,16 +118,22 @@ function LogInPage(){
                         <input
                             id="email"
                             type="text"
+                            name="Email"
                             value={form.Email}
                             onChange={handleChange}
-                            className="w-full h-12 md:h-14 rounded-lg border border-gray-300 bg-white px-4 text-sm md:text-base outline-none focus:ring-2 focus:ring-gray-400 transition"
+                            className={`w-full h-12 md:h-14 rounded-lg bg-white px-4 text-sm md:text-base outline-none focus:ring-2 transition ${
+                                formErr.Email
+                                    ? 'border-2 border-red-500 focus:ring-red-500'
+                                    : 'border border-gray-300 focus:ring-gray-400'
+                            }`}
                         />
+                        <ErrorMessage errorMessage={formErr.Email} />
                     </div>
 
                     {/* Password */}
                     <div>
                         <label
-                            for="password"
+                            htmlFor="password"
                             className="block text-sm md:text-base text-gray-600 mb-2">
                             Password
                         </label>
@@ -126,10 +141,16 @@ function LogInPage(){
                         <input
                             id="password"
                             type="password"
+                            name="Password"
                             value={form.Password}
                             onChange={handleChange}
-                            className="w-full h-12 md:h-14 rounded-lg border border-gray-300 bg-white px-4 text-sm md:text-base outline-none focus:ring-2 focus:ring-gray-400 transition"
+                            className={`w-full h-12 md:h-14 rounded-lg bg-white px-4 text-sm md:text-base outline-none focus:ring-2 transition ${
+                                formErr.Password
+                                    ? 'border-2 border-red-500 focus:ring-red-500'
+                                    : 'border border-gray-300 focus:ring-gray-400'
+                            }`}
                         />
+                        <ErrorMessage errorMessage={formErr.Password} />
                     </div>
 
                     {/* Button */}
@@ -150,7 +171,7 @@ function LogInPage(){
                                 active:scale-95
                                 transition-all duration-200">
 
-                            Log up
+                            Log in
                         </button>
                     </div>
 
@@ -159,18 +180,18 @@ function LogInPage(){
                 {/* Footer */}
                 <div className="mt-8 text-center text-sm md:text-base text-gray-600">
                     Don't have any account?
-                    <a
-                        href="/signup"
+                    <Link
+                        to="/signup"
                         className="font-medium text-[#2B2521] underline hover:text-black transition">
                         Sign up
-                    </a>
+                    </Link>
                 </div>
 
             </div>
 
         </div>
         </>
-    )
-};
+    );
+}
 
 export default LogInPage;

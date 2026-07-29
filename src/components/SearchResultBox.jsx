@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-function SearchResultBox({ suggestion }) {
+function SearchResultBox({ suggestion, getNavigatePath }) {
     const navigate = useNavigate();
     
     return (
@@ -8,12 +8,13 @@ function SearchResultBox({ suggestion }) {
             {suggestion && suggestion.length > 0 ? (
                 suggestion.map((item) => {
                     const postId = item.id ?? item._id;
+                    const navigatePath = getNavigatePath ? getNavigatePath(item) : `/post/${postId}`;
                     return (
                         <button
                             key={postId}
                             className="w-full text-left px-4 py-3 text-gray-900 hover:bg-gray-100 transition text-sm"
                             type="button"
-                            onClick={() => navigate(`/post/${postId}`)}
+                            onClick={() => navigate(navigatePath)}
                         >
                             {item.title}
                         </button>

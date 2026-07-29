@@ -26,7 +26,7 @@ function SignUpPageSubmit(){
                         flex flex-col items-center">
 
                     {/* Success Icon */}
-                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-[#18B86A] flex items-center justify-center">
+                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-[#1878F3] flex items-center justify-center">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="w-8 h-8 md:w-10 md:h-10 text-white"

@@ -25,7 +25,7 @@ function BlogCard(props) {
       </Link>
       <div className="flex flex-col">
         <div className="flex">
-          <span className="bg-green-200 rounded-full px-3 py-1 text-sm font-semibold text-green-600 mb-2">{props.category}</span>
+          <span className="bg-[#C5DDFC] rounded-full px-3 py-1 text-sm font-semibold text-white mb-2">{props.category}</span>
         </div>
         <Link to={postLink}>
           <h2 className="text-start font-bold text-xl mb-2 line-clamp-2 hover:underline">

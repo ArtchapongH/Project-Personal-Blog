@@ -13,9 +13,9 @@ import editLightIcon from "../icons/Edit_light.png";
 import trashLightIcon from "../icons/Trash_light.png";
 import addRoundLightIcon from "../icons/Add_round_light.png";
 import searchLightIcon from "../icons/Search_light.png";
-import imageBoxIcon from "../icons/Img_box_light.png";
 
-function ArticleCreatePage(){
+
+function ArticleEditPage(){
     const categories = ["Highlight", "Cat", "Inspiration", "General"];
     
     const [imageUrl, setImageUrl] = useState("");
@@ -25,22 +25,42 @@ function ArticleCreatePage(){
     const [description, setDescription] = useState("");
     const [content, setContent] = useState("");
 
+        const { postId } = useParams();
     const navigate = useNavigate();
 
-    async function handleSubmit(e) {
-        e.preventDefault();
-        const newPost = {
-            imageUrl: imageUrl,
-            category: category,
-            author:author,
-            title:title,
-            description: description,
-            content: content
-        };
-        await axios.post(`https://blog-post-project-api.vercel.app/post`, newPost);
-        navigate("/");
-    };
+    async function getPostById() {
+                const response = await axios.get(`https://blog-post-project-api.vercel.app/posts/${postId}`);
+                // รองรับทั้งรูปแบบ response.data.post และ response.data.posts
+                const post = response.data.post ?? response.data.posts ?? response.data;
 
+                setImageUrl(post?.imageUrl ?? post?.image ?? "");
+                setCategory(post?.category ?? "");
+                setAuthor(post?.author ?? "");
+                setTitle(post?.title ?? "");
+                setDescription(post?.description ?? "");
+                setContent(post?.content ?? "");
+    };    
+
+  useEffect(() => {
+    getPostById()
+    }, [postId]);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    const updatedPost = {
+        imageUrl: imageUrl,
+        category: category,
+        author:author,
+        title:title,
+        description: description,
+        content: content
+      
+    }
+    //คล้าย Create Product แต่เปลี่ยนจาก post เป็น put และใส่ param.id เข้าไป
+    await axios.put(`https://blog-post-project-api.vercel.app/post/${postId}`, updatedPost);
+    navigate("/");
+    }
+    
     return(
         <>
 
@@ -49,7 +69,7 @@ function ArticleCreatePage(){
 <div className="flex h-screen">
 
     {/* ================= Sidebar ================= */}
-    <aside className="w-64 bg-[#FBFBFA] border-r border-[#e7e3dd] flex flex-col">
+      <aside className="w-64 bg-[#FBFBFA] border-r border-[#e7e3dd] flex flex-col">
     
             {/* Logo */}
             <div className="px-8 py-10">
@@ -134,7 +154,6 @@ function ArticleCreatePage(){
     <div className="flex-1 overflow-y-auto bg-white">
 
         {/* Header */}
-        {/* เราใส่ขอบเขตของ form ถูกหรือยัง */}
         <form className="product-form" onSubmit={handleSubmit}>
         <div className="h-20 bg-white border-b px-10 flex items-center justify-between">
 
@@ -143,15 +162,13 @@ function ArticleCreatePage(){
             </h2>
 
             <div className="flex gap-4">
-                {/* ทำยังไงให้ปุ่มมันเก็บค่า draft หรือ publish? */}
+
                 <button
-                    type="submit"
                     className="px-6 py-2 rounded-full border border-gray-300 text-sm hover:bg-gray-50">
                     Save as draft
                 </button>
 
                 <button
-                    type="submit"
                     className="px-6 py-2 rounded-full bg-[#26221F] text-white text-sm hover:bg-black">
                     Save and publish
                 </button>
@@ -160,8 +177,8 @@ function ArticleCreatePage(){
 
         </div>
 
+        {/* ข้อมูลเริ่มตรงนี้ */}
         {/* Form */}
-        
         <div className="max-w-5xl px-10 py-8 bg-white">
 
             {/* Thumbnail */}
@@ -172,16 +189,17 @@ function ArticleCreatePage(){
             <div className="flex items-center gap-6 mb-6">
 
                 <div
-                    className="w-52 h-36 bg-[#FBFBFA] border rounded flex items-center justify-center">
-                        {/* ทำยังไงให้อัพโหลดรูปได้? */}
-                    <img src={imageBoxIcon} alt="Profile icon" className="w-4 h-4 object-contain" />
-                    <i data-lucide="image"
-                       className="w-7 h-7 text-gray-400">
-                       </i>
+                    className="w-52 h-36 bg-[#FBFBFA] border rounded overflow-hidden flex items-center justify-center">
+                    {imageUrl ? (
+                        <img className="block w-full h-full object-cover" src={imageUrl} alt={title} />
+                    ) : (
+                        <i data-lucide="image" className="w-7 h-7 text-gray-400"></i>
+                    )}
 
                 </div>
-                       {/* ต้องทำ onClick */} 
+
                 <button
+                    type="button"
                     className="px-6 py-2 border rounded-full text-sm hover:bg-gray-50">
                     Upload thumbnail image
                 </button>
@@ -194,31 +212,19 @@ function ArticleCreatePage(){
                 <label className="block text-xs text-gray-500 mb-2">
                     Category
                 </label>
-
-                {/* dynamic buttons with array.map [but how to adjust bg color of only first button]*/}
-                {
-                categories.map((cat) => {
-                    return (
-                    <button
-                        disabled={category === cat}
-                        key={cat}
-                        onClick={() => setCategory(cat)}
-                        className={`px-4 py-2 transition-colors rounded-sm text-sm font-medium ${category === cat ? 'bg-[#DAD6D1]' : 'hover:bg-muted'}`}
-                    >
-                        {cat}
-                    </button>
-                    )
-                })
-                }
-                {/*
                 <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
                     className="w-full border rounded px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-200">
-                    <option>Select category</option>
-                    <option>Cat</option>
-                    <option>General</option>
-                    <option>Inspiration</option>
+                    <option value="" disabled>
+                        Select category
+                    </option>
+                    {categories.map((cat) => (
+                        <option key={cat} value={cat}>
+                            {cat}
+                        </option>
+                    ))}
                 </select>
-                */}
 
             </div>
 
@@ -260,10 +266,11 @@ function ArticleCreatePage(){
                 </label>
 
                 <input
+                    
                     value={description}
                     onChange={(e) => { setDescription(e.target.value) }}
                     placeholder="Introduction"
-                    className="w-full border rounded px-3 py-2 text-sm resize-none outline-none focus:ring-2 focus:ring-orange-200"/>
+                    className="w-full border rounded px-3 py-2 text-sm resize-none outline-none focus:ring-2 focus:ring-orange-200" />
 
             </div>
 
@@ -298,4 +305,4 @@ function ArticleCreatePage(){
     )
 };
 
-export default ArticleCreatePage;
+export default ArticleEditPage;

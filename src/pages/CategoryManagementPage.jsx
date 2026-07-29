@@ -1,5 +1,40 @@
-function CategoryManagementPage(){
+import { useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
+import notebookLightIcon from "../icons/notebook_light.png";
+import fileLightIcon from "../icons/File_light.png";
+import userDuotoneIcon from "../icons/User_duotone.png";
+import bellLightIcon from "../icons/Bell_light.png";
+import refreshLightIcon from "../icons/Refresh_light.png";
+import outLightIcon from "../icons/Out_light.png";
+import signOutSquareLightIcon from "../icons/Sign_out_squre_light.png";
+import editLightIcon from "../icons/Edit_light.png";
+import trashLightIcon from "../icons/Trash_light.png";
+import addRoundLightIcon from "../icons/Add_round_light.png";
+import searchLightIcon from "../icons/Search_light.png";
+
+
+function CategoryManagementPage(){
+    const navigate = useNavigate();
+    const location = useLocation();
+    const categoryNames = ["Cat", "General", "Inspiration"];
+
+    useEffect(() => {
+        if (location.state?.showCreateCategoryToast) {
+            toast.success("Create category", {
+                description: "Category has been successfully created.",
+                style: {
+                    background: "#1878F3",
+                    color: "#FFFFFF",
+                    border: "none",
+                },
+            });
+
+            navigate(location.pathname, { replace: true, state: {} });
+        }
+    }, [location.pathname, location.state, navigate]);
+    
     function toggleSidebar(){
 
         const sidebar=document.getElementById("sidebar");
@@ -19,102 +54,86 @@ function CategoryManagementPage(){
         <div className="flex h-screen">
 
             {/* Sidebar */}
-            <aside id="sidebar"
-                className="fixed md:relative z-50 w-64 h-full bg-[#FBFBFA] border-r border-gray-200 transform -translate-x-full md:translate-x-0 transition-transform duration-300">
-
-                {/* Logo */}
-                <div className="px-8 py-10">
-                    <h1 className="text-4xl font-light text-gray-700">hh.</h1>
-                    <p className="text-orange-300 text-sm mt-1">Admin panel</p>
-                </div>
-
-                {/* Navigation */}
-                <nav className="text-sm">
-
-                    <a href="#" className="flex items-center gap-3 px-8 py-4 text-gray-600 hover:bg-gray-100">
-
-                        {/* article icon */}
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
-                                d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
-                        </svg>
-
-                        Article management
-                    </a>
-
-                    <a href="#"
-                        className="flex items-center gap-3 px-8 py-4 bg-[#E9E6E1] text-gray-700">
-
-                        {/* folder */}
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
-                                d="M3 7h5l2 2h11v8a2 2 0 0 1-2 2H3z"/>
-                        </svg>
-
-                        Category management
-                    </a>
-
-                    <a href="#" className="flex items-center gap-3 px-8 py-4 text-gray-600 hover:bg-gray-100">
-
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <circle cx="12" cy="8" r="4" stroke-width="1.8"/>
-                            <path d="M4 20c1.5-4 14.5-4 16 0" stroke-width="1.8"/>
-                        </svg>
-
-                        Profile
-                    </a>
-
-                    <a href="#" className="flex items-center gap-3 px-8 py-4 text-gray-600 hover:bg-gray-100">
-
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-width="1.8" stroke-linecap="round"
-                                d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5"/>
-                            <path stroke-width="1.8" d="M10 20h4"/>
-                        </svg>
-
-                        Notification
-                    </a>
-
-                    <a href="#" className="flex items-center gap-3 px-8 py-4 text-gray-600 hover:bg-gray-100">
-
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
-                                d="M12 8v4l2 2M12 3a9 9 0 100 18 9 9 0 000-18z"/>
-                        </svg>
-
-                        Reset password
-                    </a>
-
-                </nav>
-
-                {/* Bottom */}
-                <div className="absolute bottom-0 w-full">
-
-                    <a href="#" className="flex items-center gap-3 px-8 py-5 text-gray-600 hover:bg-gray-100 border-t">
-
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-width="1.8" d="M7 17L17 7"/>
-                            <path stroke-width="1.8" d="M8 7h9v9"/>
-                        </svg>
-
-                        hh. website
-                    </a>
-
-                    <a href="#" className="flex items-center gap-3 px-8 py-5 text-gray-600 hover:bg-gray-100">
-
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-width="1.8"
-                                d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/>
-                            <path stroke-width="1.8" d="M10 17l5-5-5-5"/>
-                            <path stroke-width="1.8" d="M15 12H3"/>
-                        </svg>
-
-                        Log out
-                    </a>
-
-                </div>
-
-            </aside>
+             <aside className="w-64 bg-[#FBFBFA] border-r border-[#e7e3dd] flex flex-col">
+            
+                    {/* Logo */}
+                    <div className="px-8 py-10">
+                        <h1 className="text-5xl font-semibold tracking-tight">
+                            hh<span className="text-[#529AF6]">.</span>
+                        </h1>
+            
+                        <p className="text-[#529AF6] text-lg mt-1">
+                            Admin panel
+                        </p>
+                    </div>
+            
+                    {/* Navigation */}
+                    <nav className="flex-1">
+            
+                        <button 
+                            onClick={() => navigate("/admin/article/mgt")}
+                            className="flex items-center gap-3 px-8 py-4 text-gray-500 hover:bg-gray-100 text-sm w-full text-left"
+                        >
+                            <img src={notebookLightIcon} alt="Article icon" className="w-4 h-4 object-contain" />
+                            Article management
+                        </button>
+            
+                        <button 
+                            onClick={() => navigate("/admin/category/mgt")}
+                            className="flex items-center gap-3 px-8 py-4 bg-[#C5DDFC] text-gray-900 text-sm font-medium w-full text-left"
+                        >
+                            <img src={fileLightIcon} alt="Category icon" className="w-4 h-4 object-contain" />
+                            Category management
+                        </button>
+            
+                        <button 
+                            onClick={() => navigate("/admin/profile")}
+                            className="flex items-center gap-3 px-8 py-4 text-gray-500 hover:bg-gray-100 text-sm w-full text-left"
+                        >
+                            <img src={userDuotoneIcon} alt="Profile icon" className="w-4 h-4 object-contain" />
+                            Profile
+                        </button>
+            
+                        <button 
+                            onClick={() => navigate("/admin/notification")}
+                            className="flex items-center gap-3 px-8 py-4 text-gray-500 hover:bg-gray-100 text-sm w-full text-left"
+                        >
+                            <img src={bellLightIcon} alt="Notification icon" className="w-4 h-4 object-contain" />
+                            Notification
+                        </button>
+            
+                        <button 
+                            onClick={() => navigate("/admin/reset")}
+                            className="flex items-center gap-3 px-8 py-4 text-gray-500 hover:bg-gray-100 text-sm w-full text-left"
+                        >
+                            <img src={refreshLightIcon} alt="Reset icon" className="w-4 h-4 object-contain" />
+                            Reset password
+                        </button>
+            
+                    </nav>
+            
+                    {/* Bottom */}
+                    <div className="border-t">
+            
+                        <button 
+                            onClick={() => navigate("/")}
+                            className="flex items-center gap-3 px-8 py-4 text-sm text-gray-500 w-full text-left hover:bg-gray-100"
+                        >
+                            <img src={outLightIcon} alt="Out icon" className="w-4 h-4 object-contain" />
+                            hh.website
+                        </button>
+            
+                        <button 
+                            onClick={() => navigate("/")}
+                            className="flex items-center gap-3 px-8 py-4 text-sm text-gray-500 w-full text-left hover:bg-gray-100"
+                        >
+                            <img src={signOutSquareLightIcon} alt="SignOut icon" className="w-4 h-4 object-contain" />
+                            Log out
+                        </button>
+            
+                    </div>
+            
+                </aside>
 
             {/* Main */}
             <main className="flex-1 overflow-auto bg-white">
@@ -149,6 +168,7 @@ function CategoryManagementPage(){
                     </div>
 
                     <button
+                        onClick={() => navigate("/admin/category/create")}
                         className="bg-[#2B241D] text-white rounded-full px-7 py-3 flex items-center gap-2 hover:bg-black transition">
 
                         <span className="text-lg">+</span>
@@ -177,84 +197,28 @@ function CategoryManagementPage(){
                             <div></div>
                         </div>
 
-                        {/* Row */}
-                        <div className="grid grid-cols-[1fr_90px] items-center px-5 py-4 border-b hover:bg-gray-50">
-                            <div>Cat</div>
+                        {categoryNames.map((categoryName, index) => (
+                            <div
+                                key={categoryName}
+                                className={`grid grid-cols-[1fr_90px] items-center px-5 py-4 ${
+                                    index < categoryNames.length - 1 ? "border-b" : ""
+                                } hover:bg-gray-50`}
+                            >
+                                <div>{categoryName}</div>
 
-                            <div className="flex justify-end gap-4">
+                                <div className="flex justify-end gap-4">
 
-                                {/* Edit */}
-                                <button>
+                                    <button onClick={() => navigate("/admin/category/create")}>
+                                         <img src={editLightIcon} alt="Category icon" className="w-4 h-4 object-contain" />
+                                    </button>
 
-                                    <svg className="w-4 h-4 text-gray-500"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24">
+                                    <button>
+                                         <img src={trashLightIcon} alt="Category icon" className="w-4 h-4 object-contain" />
+                                    </button>
 
-                                        <path stroke-width="1.8"
-                                            d="M16.862 4.487a2.1 2.1 0 113 3L7 20l-4 1 1-4z"/>
-                                    </svg>
-
-                                </button>
-
-                                {/* Delete */}
-                                <button>
-
-                                    <svg className="w-4 h-4 text-gray-400"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24">
-
-                                        <path stroke-width="1.8"
-                                            d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13"/>
-                                    </svg>
-
-                                </button>
-
+                                </div>
                             </div>
-                        </div>
-
-                        {/* Row */}
-                        <div className="grid grid-cols-[1fr_90px] items-center px-5 py-4 border-b bg-[#F4F2EE]">
-                            <div>General</div>
-
-                            <div className="flex justify-end gap-4">
-
-                                <button>
-                                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-width="1.8" d="M16.862 4.487a2.1 2.1 0 113 3L7 20l-4 1 1-4z"/>
-                                    </svg>
-                                </button>
-
-                                <button>
-                                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-width="1.8" d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13"/>
-                                    </svg>
-                                </button>
-
-                            </div>
-                        </div>
-
-                        {/* Row */}
-                        <div className="grid grid-cols-[1fr_90px] items-center px-5 py-4 hover:bg-gray-50">
-                            <div>Inspiration</div>
-
-                            <div className="flex justify-end gap-4">
-
-                                <button>
-                                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-width="1.8" d="M16.862 4.487a2.1 2.1 0 113 3L7 20l-4 1 1-4z"/>
-                                    </svg>
-                                </button>
-
-                                <button>
-                                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-width="1.8" d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13"/>
-                                    </svg>
-                                </button>
-
-                            </div>
-                        </div>
+                        ))}
 
                     </div>
 

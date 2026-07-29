@@ -126,7 +126,7 @@ function ArticleSection() {
                     disabled={category === cat}
                     key={cat}
                     onClick={() => setCategory(cat)}
-                    className={`px-4 py-2 transition-colors rounded-sm text-sm font-medium ${category === cat ? 'bg-[#DAD6D1]' : 'hover:bg-muted'}`}
+                    className={`px-4 py-2 transition-colors rounded-sm text-sm font-medium ${category === cat ? 'bg-[#8BBBF9]' : 'hover:bg-muted'}`}
                   >
                     {cat}
                   </button>
