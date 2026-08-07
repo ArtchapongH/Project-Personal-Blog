@@ -25,11 +25,30 @@ import MemberPopUpMenuNoti from "./components/MemberPopUpMenuNoti";
 import DeleteArticle from "./components/DeleteArticle";
 import HealthTestPage from "./pages/HealthTestPage";
 import LandingPageMember from "./pages/LandingPageMember";
+import {useAuth} from "./contexts/authenticaition.jsx";
 
 function App() {
+  const auth = useAuth();
+
   return (
     <>
       <Routes>
+        {auth.isAuthenticated ? (
+          <Route path="/" element={<LandingPage />} />
+        ) : (
+          <Route path="/" element={<LandingPageMember />} />
+        )}
+      </Routes>
+
+      <Toaster position="bottom-right" closeButton richColors />
+    </>  
+    );
+}
+
+export default App;
+
+/*
+<Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/m" element={<LandingPageMember />} />
         <Route path="/post/:postId" element={<ViewPostPage />} />
@@ -54,10 +73,5 @@ function App() {
         <Route path="/comment" element={<ViewComments />} />
         <Route path="*" element={<NotFoundPage />} />
         <Route path="/health-test" element={<HealthTestPage />} />
-      </Routes>
-      <Toaster position="bottom-right" closeButton richColors />
-    </>
-  );
-}
-
-export default App;
+</Routes>
+        */

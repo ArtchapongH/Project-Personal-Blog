@@ -1,22 +1,98 @@
+import { useEffect, useRef, useState } from "react"
+import axios from "axios"
 import { toast } from "sonner"
 import { Link } from "react-router-dom"
 import userDuotoneIcon from "../icons/User_duotone.png"
 import refreshLightIcon from "../icons/Refresh_light.png"
 
 function MemberProfile(){
-    const handleSave = () => {
-        toast.success("Saved profile", {
-            description: "Your profile has been successfully updated",
-            style: {
-                background: "#1878F3",
-                borderColor: "#1878F3",
-                color: "#FFFFFF"
-            },
-        });
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+
+    const [name, setName] = useState("Moodeng ja");
+    const [username, setUsername] = useState("moodeng.cute");
+    const [email] = useState("moodeng.cute@gmail.com");
+    const [selectedImageFile, setSelectedImageFile] = useState(null);
+    const [previewImageUrl, setPreviewImageUrl] = useState("");
+    const [isSaving, setIsSaving] = useState(false);
+
+    const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        if (!selectedImageFile) {
+            setPreviewImageUrl("");
+            return;
+        }
+
+        const objectUrl = URL.createObjectURL(selectedImageFile);
+        setPreviewImageUrl(objectUrl);
+
+        return () => {
+            URL.revokeObjectURL(objectUrl);
+        };
+    }, [selectedImageFile]);
+
+    const handleOpenFilePicker = () => {
+        fileInputRef.current?.click();
     };
+
+    const handleImageSelect = (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setSelectedImageFile(file);
+    };
+
+    const handleSave = async () => {
+        try {
+            setIsSaving(true);
+
+            const formData = new FormData();
+            formData.append("name", name);
+            formData.append("username", username);
+            formData.append("email", email);
+
+            if (selectedImageFile) {
+                formData.append("profileImage", selectedImageFile);
+            }
+
+            const token = localStorage.getItem("token");
+
+            await axios.put(`${API_BASE_URL}/membership/profile`, formData, {
+                headers: {
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+
+            toast.success("Saved profile", {
+                description: "Your profile has been successfully updated",
+                style: {
+                    background: "#1878F3",
+                    borderColor: "#1878F3",
+                    color: "#FFFFFF"
+                },
+            });
+        } catch (error) {
+            toast.error("Failed to save profile", {
+                description: error.response?.data?.message || error.message || "Please try again",
+            });
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const avatarSrc = previewImageUrl || userDuotoneIcon;
+    const avatarClassName = previewImageUrl ? "w-full h-full object-cover" : "w-4 h-4 object-contain";
 
     return(
         <>
+        <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageSelect}
+        />
         <div className="bg-white min-h-screen flex flex-col font-sans text-stone-800 antialiased">
 
             {/* Mobile View - Only shown on mobile */}
@@ -45,7 +121,7 @@ function MemberProfile(){
                     <div className="px-6 py-5 flex items-center justify-between border-b border-stone-200/60">
                         <div className="flex items-center gap-2">
                             <div className="w-10 h-10 rounded-full overflow-hidden border border-stone-200 bg-stone-100 shrink-0 flex items-center justify-center">
-                                <img src={userDuotoneIcon} alt="Profile icon" className="w-4 h-4 object-contain" />
+                                <img src={avatarSrc} alt="Profile icon" className={avatarClassName} />
                             </div>
                             <span className="font-semibold text-stone-700 tracking-wide truncate max-w-30">Moodeng ja</span>
                         </div>
@@ -60,11 +136,12 @@ function MemberProfile(){
                     {/* Form */}
                     <form className="p-6 space-y-5 bg-white" onSubmit={(e) => e.preventDefault()}>
                         <div className="flex items-center gap-4">
-                            <div className="w-20 h-20 rounded-full border border-stone-200 bg-stone-100 flex items-center justify-center shrink-0">
-                                <img src={userDuotoneIcon} alt="Profile icon" className="w-4 h-4 object-contain" />
+                            <div className="w-20 h-20 rounded-full border border-stone-200 bg-stone-100 flex items-center justify-center shrink-0 overflow-hidden">
+                                <img src={avatarSrc} alt="Profile icon" className={avatarClassName} />
                             </div>
                             <button
                                 type="button"
+                                onClick={handleOpenFilePicker}
                                 className="px-6 py-2.5 rounded-full border border-stone-400 bg-white hover:bg-stone-100 transition font-medium text-sm"
                             >
                                 Upload profile picture
@@ -77,7 +154,8 @@ function MemberProfile(){
                             </label>
                             <input
                                 type="text"
-                                defaultValue="Moodeng ja"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
                                 className="w-full px-4 py-3 rounded-lg border border-stone-300 bg-white text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-shadow shadow-sm"
                             />
                         </div>
@@ -88,7 +166,8 @@ function MemberProfile(){
                             </label>
                             <input
                                 type="text"
-                                defaultValue="moodeng.cute"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
                                 className="w-full px-4 py-3 rounded-lg border border-stone-300 bg-white text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-shadow shadow-sm"
                             />
                         </div>
@@ -99,7 +178,7 @@ function MemberProfile(){
                             </label>
                             <input
                                 disabled
-                                defaultValue="moodeng.cute@gmail.com"
+                                value={email}
                                 className="w-full px-4 py-3 rounded-lg bg-stone-100 text-stone-400 cursor-not-allowed"
                             />
                         </div>
@@ -107,8 +186,9 @@ function MemberProfile(){
                         <button
                             onClick={handleSave}
                             type="button"
+                            disabled={isSaving}
                             className="px-6 py-3 bg-[#231f1d] hover:bg-stone-800 text-stone-100 font-medium rounded-full shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-900">
-                            Save
+                            {isSaving ? "Saving..." : "Save"}
                         </button>
                     </form>
                 </div>
@@ -119,7 +199,7 @@ function MemberProfile(){
                 {/* Top Header with Profile and Title */}
                 <div className="bg-white rounded-t-xl px-6 py-4 flex items-center gap-3">
                     <div className="w-12 h-12 rounded-full overflow-hidden border border-stone-200 bg-stone-100 shrink-0 flex items-center justify-center">
-                        <img src={userDuotoneIcon} alt="Profile icon"  className="w-4 h-4 object-contain" />
+                        <img src={avatarSrc} alt="Profile icon"  className={avatarClassName} />
                     </div>
                     <span className="font-semibold text-stone-700 text-lg">Moodeng ja</span>
                     <span className="text-stone-400 mx-2">|</span>
@@ -153,11 +233,12 @@ function MemberProfile(){
                         <form className="space-y-5 max-w-lg" onSubmit={(e) => e.preventDefault()}>
                             {/* Avatar Section */}
                             <div className="flex items-center gap-4">
-                                <div className="w-20 h-20 rounded-full border border-stone-200 bg-stone-100 flex items-center justify-center shrink-0">
-                                    <img src={userDuotoneIcon} alt="Profile icon"  className="w-4 h-4 object-contain" />
+                                <div className="w-20 h-20 rounded-full border border-stone-200 bg-stone-100 flex items-center justify-center shrink-0 overflow-hidden">
+                                    <img src={avatarSrc} alt="Profile icon"  className={avatarClassName} />
                                 </div>
                                 <button 
                                     type="button"
+                                    onClick={handleOpenFilePicker}
                                     className="px-6 py-2.5 rounded-full border border-stone-400 bg-white hover:bg-stone-100 transition font-medium text-sm">
                                     Upload profile picture
                                 </button>
@@ -171,7 +252,8 @@ function MemberProfile(){
                                 <input 
                                     type="text" 
                                     id="name" 
-                                    defaultValue="Moodeng ja"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
                                     className="w-full px-4 py-3 rounded-lg border border-stone-300 bg-white text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-shadow shadow-sm"
                                 />
                             </div>
@@ -184,7 +266,8 @@ function MemberProfile(){
                                 <input 
                                     type="text" 
                                     id="username" 
-                                    defaultValue="moodeng.cute"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
                                     className="w-full px-4 py-3 rounded-lg border border-stone-300 bg-white text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-shadow shadow-sm"
                                 />
                             </div>
@@ -198,7 +281,7 @@ function MemberProfile(){
                                     type="email" 
                                     id="email" 
                                     disabled
-                                    defaultValue="moodeng.cute@gmail.com"
+                                    value={email}
                                     className="w-full px-4 py-3 rounded-lg bg-stone-100 text-stone-400 cursor-not-allowed"
                                 />
                             </div>
@@ -208,9 +291,10 @@ function MemberProfile(){
                                 <button 
                                     type="button"
                                     onClick={handleSave}
+                                    disabled={isSaving}
                                     className="px-6 py-3 bg-[#231f1d] hover:bg-stone-800 text-stone-100 font-medium rounded-full shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-900"
                                 >
-                                    Save
+                                    {isSaving ? "Saving..." : "Save"}
                                 </button>
                             </div>
                         </form>

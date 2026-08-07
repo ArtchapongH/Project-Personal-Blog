@@ -2,7 +2,7 @@ import { useState } from "react";
 import ErrorMessage from "./ErrorMessage";
 import IsValidEmail from "../utils/IsValidEmail";
 
-function SignUpPageFill({ onSubmit }){
+function SignUpPageFill({ onSubmit, isSubmitting = false, submitError = "" }){
 
     const [form, setForm] = useState({
         Name: "",
@@ -89,12 +89,13 @@ function SignUpPageFill({ onSubmit }){
     };
     */}
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         if(!ValidateForm()){
             return;
         }
-        onSubmit(form);
+
+        await onSubmit(form);
     };
 
 
@@ -197,11 +198,14 @@ function SignUpPageFill({ onSubmit }){
                         <div className="pt-4 flex justify-center">
                             <button
                                 type="submit"
+                                disabled={isSubmitting}
                                 className="bg-stone-900 text-white rounded-full px-10 py-2.5 hover:bg-black transition font-medium"
                             >
-                                Sign up
+                                {isSubmitting ? "Signing up..." : "Sign up"}
                             </button>
                         </div>
+
+                        <ErrorMessage errorMessage={submitError} />
 
                     </form>
 
