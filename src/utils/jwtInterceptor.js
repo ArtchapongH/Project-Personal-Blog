@@ -11,7 +11,7 @@ function jwtInterceptor() {
     if(hasToken){
       req.headers = {
         ...req.headers,
-        Authoriztion: `Bearer ${window.localStorage.getItem("token")}`
+        Authorization: `Bearer ${window.localStorage.getItem("token")}`
       };
     }
 
@@ -27,10 +27,11 @@ function jwtInterceptor() {
       //  ให้เขียน Logic ในการรองรับเมื่อ Server ได้ Response กลับมาเป็น Error
       // โดยการ Redirect ผู้ใช้งานไปที่หน้า Login และลบ Token ออกจาก Local Storage
       // ภายใน Error Callback Function ของ axios.interceptors.response.use
-      if(
-        error.response.status === 401 && 
-        error.response.statusText === "Unauthorized"
-      ){
+      const status = error?.response?.status;
+      const skipAuthRedirect =
+        error?.config?.headers?.["X-Skip-Auth-Redirect"] === "true";
+
+      if(status === 401 && !skipAuthRedirect){
         window.localStorage.removeItem("token");
         window.location.replace("/login");
       }

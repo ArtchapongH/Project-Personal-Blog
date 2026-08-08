@@ -1,47 +1,90 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const AuthContext = React.createContext();
 
+function decodeJwtPayload(token) {
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return null;
+
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const decoded = atob(normalized);
+    return JSON.parse(decoded);
+  } catch {
+    return null;
+  }
+}
+
 function AuthProvider(props) {
+  const navigate = useNavigate();
+
   const [state, setState] = useState({
-    loading: null,
+    loading: false,
     error: null,
     user: null,
   });
 
-  const login = async () => {
-    // 🐨 Todo: Exercise #4
-    //  ให้เขียน Logic ของ Function `login` ตรงนี้
-    //  Function `login` ทำหน้าที่สร้าง Request ไปที่ API POST /login
-    //  ที่สร้างไว้ด้านบนพร้อมกับ Body ที่กำหนดไว้ในตารางที่ออกแบบไว้
-    const result = await axios.post("http://localhost:4000/login", data);
-    console.log(result);
+  const login = async (data) => {
+    try {
+      setState((prev) => ({ ...prev, loading: true, error: null }));
 
-    localStorage.setItem("token", result.data.token);
+      const payload = {
+        email: data?.email ?? data?.Email,
+        password: data?.password ?? data?.Password,
+      };
 
-    const userDataFromToken = jwtDecode(result.data.token);
-    setState({...state, user: userDataFromToken });
-    navigate("/");
+      const result = await axios.post("http://localhost:4000/login", payload);
+      const token = result?.data?.token;
 
+      if (!token) {
+        throw new Error("Token not found in login response");
+      }
+
+      localStorage.setItem("token", token);
+
+      const userDataFromToken = decodeJwtPayload(token);
+      setState((prev) => ({ ...prev, user: userDataFromToken, loading: false }));
+      navigate("/");
+    } catch (error) {
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: error?.response?.data?.message || "Login failed",
+      }));
+      throw error;
+    }
   };
 
-  const register = async () => {
-    // 🐨 Todo: Exercise #2
-    //  ให้เขียน Logic ของ Function `register` ตรงนี้
-    //  Function register ทำหน้าที่สร้าง Request ไปที่ API POST /register
-    //  ที่สร้างไว้ด้านบนพร้อมกับ Body ที่กำหนดไว้ในตารางที่ออกแบบไว้
-    
-    await axios.post("http://localhost:4000/register", data);
-    navigate("/login");
-  
+  const register = async (data) => {
+    try {
+      setState((prev) => ({ ...prev, loading: true, error: null }));
+
+      const payload = {
+        name: data?.name ?? data?.Name,
+        username: data?.username ?? data?.Username,
+        email: data?.email ?? data?.Email,
+        password: data?.password ?? data?.Password,
+        role: "user",
+      };
+      await axios.post("http://localhost:4000/register", payload);
+      setState((prev) => ({ ...prev, loading: false }));
+      navigate("/");
+    } catch (error) {
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: error?.response?.data?.message || "Register failed",
+      }));
+      throw error;
+    }
   };
 
   const logout = () => {
-    // 🐨 Todo: Exercise #7
-    //  ให้เขียน Logic ของ Function `logout` ตรงนี้
-    //  Function logout ทำหน้าที่ในการลบ JWT Token ออกจาก Local Storage
     localStorage.removeItem("token");
-    setState({ ...state, user: null, error: null });
+    setState((prev) => ({ ...prev, user: null, error: null }));
+    navigate("/", { replace: true });
   };
 
   const isAuthenticated = Boolean(localStorage.getItem("token"));

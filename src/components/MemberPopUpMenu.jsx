@@ -7,10 +7,13 @@ import resetIcon from "../icons/Refresh_light.png"
 import signOutIcon from "../icons/Sign_out_squre_light.png"
 import MemberPopUpNotification from "./MemberPopUpNotification";
 
+import {useAuth} from "../contexts/authenticaition.jsx";
+
 function MemberPopUpMenu() {
     const navigate = useNavigate();
     const [showNotification, setShowNotification] = useState(false);
-    
+    const {logout} = useAuth();
+
     return(
         <>
             {/* Card Container */}
@@ -105,7 +108,7 @@ function MemberPopUpMenu() {
                     {/* Logout */}
                     <button 
                         onClick={() => {
-                            // Add logout logic here
+                            logout();
                         }}
                         className="flex items-center gap-4 px-6 py-3 hover:bg-red-50 transition w-full text-left"
                     >

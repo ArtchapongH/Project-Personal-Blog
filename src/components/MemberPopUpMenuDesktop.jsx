@@ -6,9 +6,11 @@ import userIcon from "../icons/User_duotone.png"
 import resetIcon from "../icons/Refresh_light.png"
 import signOutIcon from "../icons/Sign_out_squre_light.png"
 
+import {useAuth} from "../contexts/authenticaition.jsx";
+
 function MemberPopUpMenuDesktop() {
     const navigate = useNavigate();
-    
+    const {logout} = useAuth();
     return(
         <>
             {/* Card */}
@@ -60,7 +62,7 @@ function MemberPopUpMenuDesktop() {
                     {/* Logout */}
                     <button 
                         onClick={() => {
-                            // Add logout logic here
+                            logout();
                         }}
                         className="flex items-center gap-4 px-6 py-3 hover:bg-red-50 transition w-full text-left"
                     >

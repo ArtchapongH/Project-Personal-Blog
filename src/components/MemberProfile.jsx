@@ -2,24 +2,88 @@ import { useEffect, useRef, useState } from "react"
 import axios from "axios"
 import { toast } from "sonner"
 import { Link } from "react-router-dom"
+import { useAuth } from "../contexts/authenticaition.jsx"
 import userDuotoneIcon from "../icons/User_duotone.png"
 import refreshLightIcon from "../icons/Refresh_light.png"
 
 function MemberProfile(){
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+    const { state } = useAuth();
+    const userIdFromContext = state?.user?.id ?? state?.user?.userId ?? state?.user?._id ?? state?.user?.sub;
+    const userIdFromToken = (() => {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return "";
 
-    const [name, setName] = useState("Moodeng ja");
-    const [username, setUsername] = useState("moodeng.cute");
-    const [email] = useState("moodeng.cute@gmail.com");
+            const payload = token.split(".")[1];
+            if (!payload) return "";
+
+            const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+            const decoded = JSON.parse(atob(normalized));
+            return decoded?.id ?? decoded?.userId ?? decoded?._id ?? decoded?.sub ?? "";
+        } catch {
+            return "";
+        }
+    })();
+    const userId = userIdFromContext || userIdFromToken || "";
+    const profileEndpoint = `${API_BASE_URL}/profiles/${userId}`;
+
+    const [name, setName] = useState("");
+    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [profileImage, setProfileImage] = useState(null);
+    
     const [selectedImageFile, setSelectedImageFile] = useState(null);
     const [previewImageUrl, setPreviewImageUrl] = useState("");
     const [isSaving, setIsSaving] = useState(false);
+
+    async function getUserProfileById(options = {}) {
+        const { suppressAuthRedirect = false } = options;
+        if (!userId) return;
+
+        const token = localStorage.getItem("token");
+        const config = {
+            headers: {
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                ...(suppressAuthRedirect ? { "X-Skip-Auth-Redirect": "true" } : {}),
+            },
+        };
+
+        const response = await axios.get(profileEndpoint, config);
+
+        const profile = response?.data?.data ?? response?.data ?? {};
+        const {
+            name = "",
+            username = "",
+            email = "",
+        } = profile;
+        const profileImageFromApi =
+            profile?.profileImage ??
+            profile?.profile_pic ??
+            profile?.profilePic ??
+            profile?.profile_picture ??
+            null;
+
+        setName(name || "");
+        setUsername(username || "");
+        setEmail(email || "");
+
+        if (typeof profileImageFromApi === "string" && profileImageFromApi.trim()) {
+            setProfileImage(profileImageFromApi);
+        } else {
+            setProfileImage(null);
+        }
+
+        // Clear temporary client-side preview after loading server profile data.
+        setPreviewImageUrl("");
+        setSelectedImageFile(null);
+    }
 
     const fileInputRef = useRef(null);
 
     useEffect(() => {
         if (!selectedImageFile) {
-            setPreviewImageUrl("");
             return;
         }
 
@@ -30,6 +94,11 @@ function MemberProfile(){
             URL.revokeObjectURL(objectUrl);
         };
     }, [selectedImageFile]);
+
+    useEffect(() => {
+        if (!userId) return;
+        getUserProfileById();
+    }, [userId]);
 
     const handleOpenFilePicker = () => {
         fileInputRef.current?.click();
@@ -46,23 +115,28 @@ function MemberProfile(){
         try {
             setIsSaving(true);
 
+            if (!userId) {
+                throw new Error("User id not found");
+            }
+
             const formData = new FormData();
             formData.append("name", name);
             formData.append("username", username);
-            formData.append("email", email);
 
             if (selectedImageFile) {
-                formData.append("profileImage", selectedImageFile);
+                formData.append("imageFile", selectedImageFile);
             }
 
             const token = localStorage.getItem("token");
 
-            await axios.put(`${API_BASE_URL}/membership/profile`, formData, {
+            await axios.put(profileEndpoint, formData, {
                 headers: {
                     ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                    "Content-Type": "multipart/form-data",
+                    "X-Skip-Auth-Redirect": "true",
                 },
             });
+
+            await getUserProfileById({ suppressAuthRedirect: true });
 
             toast.success("Saved profile", {
                 description: "Your profile has been successfully updated",
@@ -81,8 +155,12 @@ function MemberProfile(){
         }
     };
 
-    const avatarSrc = previewImageUrl || userDuotoneIcon;
-    const avatarClassName = previewImageUrl ? "w-full h-full object-cover" : "w-4 h-4 object-contain";
+    const savedAvatarSrc = profileImage || userDuotoneIcon;
+    const savedAvatarClassName = profileImage ? "w-full h-full object-cover" : "w-4 h-4 object-contain";
+    const formAvatarSrc = previewImageUrl || profileImage || userDuotoneIcon;
+    const formAvatarClassName = (previewImageUrl || profileImage)
+        ? "w-full h-full object-cover"
+        : "w-4 h-4 object-contain";
 
     return(
         <>
@@ -121,9 +199,9 @@ function MemberProfile(){
                     <div className="px-6 py-5 flex items-center justify-between border-b border-stone-200/60">
                         <div className="flex items-center gap-2">
                             <div className="w-10 h-10 rounded-full overflow-hidden border border-stone-200 bg-stone-100 shrink-0 flex items-center justify-center">
-                                <img src={avatarSrc} alt="Profile icon" className={avatarClassName} />
+                                <img src={savedAvatarSrc} alt="Profile icon" className={savedAvatarClassName} />
                             </div>
-                            <span className="font-semibold text-stone-700 tracking-wide truncate max-w-30">Moodeng ja</span>
+                            <span className="font-semibold text-stone-700 tracking-wide truncate max-w-30">{username}</span>
                         </div>
 
                         <div className="h-6 w-px bg-stone-300 mx-2"></div>
@@ -137,7 +215,7 @@ function MemberProfile(){
                     <form className="p-6 space-y-5 bg-white" onSubmit={(e) => e.preventDefault()}>
                         <div className="flex items-center gap-4">
                             <div className="w-20 h-20 rounded-full border border-stone-200 bg-stone-100 flex items-center justify-center shrink-0 overflow-hidden">
-                                <img src={avatarSrc} alt="Profile icon" className={avatarClassName} />
+                                <img src={formAvatarSrc} alt="Profile icon" className={formAvatarClassName} />
                             </div>
                             <button
                                 type="button"
@@ -199,9 +277,9 @@ function MemberProfile(){
                 {/* Top Header with Profile and Title */}
                 <div className="bg-white rounded-t-xl px-6 py-4 flex items-center gap-3">
                     <div className="w-12 h-12 rounded-full overflow-hidden border border-stone-200 bg-stone-100 shrink-0 flex items-center justify-center">
-                        <img src={avatarSrc} alt="Profile icon"  className={avatarClassName} />
+                        <img src={savedAvatarSrc} alt="Profile icon"  className={savedAvatarClassName} />
                     </div>
-                    <span className="font-semibold text-stone-700 text-lg">Moodeng ja</span>
+                    <span className="font-semibold text-stone-700 text-lg">{username}</span>
                     <span className="text-stone-400 mx-2">|</span>
                     <h1 className="text-lg font-semibold text-stone-900">Profile</h1>
                 </div>
@@ -234,7 +312,7 @@ function MemberProfile(){
                             {/* Avatar Section */}
                             <div className="flex items-center gap-4">
                                 <div className="w-20 h-20 rounded-full border border-stone-200 bg-stone-100 flex items-center justify-center shrink-0 overflow-hidden">
-                                    <img src={avatarSrc} alt="Profile icon"  className={avatarClassName} />
+                                    <img src={formAvatarSrc} alt="Profile icon"  className={formAvatarClassName} />
                                 </div>
                                 <button 
                                     type="button"

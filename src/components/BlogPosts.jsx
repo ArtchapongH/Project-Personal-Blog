@@ -8,6 +8,8 @@ function BlogPosts({ category }) {
     const [hasMore, setHasMore] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
 
+    const endpoint = "http://localhost:4000/posts";
+
     // ฟังก์ชันสำหรับโหลดข้อมูล
     const fetchPosts = async (pageNum, currentCategory) => {
         // ป้องกันการโหลดซ้ำถ้ายังโหลดไม่เสร็จ
@@ -18,7 +20,7 @@ function BlogPosts({ category }) {
             const categoryParam = currentCategory === "Highlight" ? "" : currentCategory;
 
             const response = await axios.get(
-                "https://blog-post-project-api.vercel.app/posts",
+                endpoint,
                 {
                     params: {
                         page: pageNum,

@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import ErrorMessage from '../components/ErrorMessage';
 import IsValidEmail from '../utils/IsValidEmail';
+import { useAuth } from '../contexts/authenticaition.jsx';
 import '../App.css';
 
 function LogInPage() {
-    const navigate = useNavigate();
+    const { login, state } = useAuth();
 
     const [form, setForm] = useState({
             Email: "",
@@ -72,12 +73,17 @@ function LogInPage() {
         };
         */}
     
-        const handleSubmit = (event) => {
+        const handleSubmit = async (event) => {
             event.preventDefault();
             if(!ValidateForm()){
                 return;
             }
-            navigate('/');
+
+            try {
+                await login(form);
+            } catch {
+                // Error state is handled in auth context and shown below.
+            }
         };
     
 
@@ -157,6 +163,7 @@ function LogInPage() {
                     <div className="flex justify-center pt-3">
                         <button
                             type="submit"
+                            disabled={state.loading}
                             className="bg-[#2D2723]
                                 text-white
                                 rounded-full
@@ -171,9 +178,11 @@ function LogInPage() {
                                 active:scale-95
                                 transition-all duration-200">
 
-                            Log in
+                            {state.loading ? 'Logging in...' : 'Log in'}
                         </button>
                     </div>
+
+                    <ErrorMessage errorMessage={state.error} />
 
                 </form>
 

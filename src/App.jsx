@@ -34,10 +34,15 @@ function App() {
     <>
       <Routes>
         {auth.isAuthenticated ? (
-          <Route path="/" element={<LandingPage />} />
-        ) : (
           <Route path="/" element={<LandingPageMember />} />
+        ) : (
+          <Route path="/" element={<LandingPage />} />
         )}
+        <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/login" element={<LogInPage />} />
+
+        <Route path="/membership" element={<MemberProfile />} />
+        <Route path="/reset" element={<ResetPasswordPage />} />
       </Routes>
 
       <Toaster position="bottom-right" closeButton richColors />

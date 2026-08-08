@@ -32,13 +32,13 @@ function ArticleSection() {
     getPosts();
   }, [category]);
 */
-
+  const endpoint = "http://localhost:4000/posts";
 
   useEffect(()=>{
     
       const fetchSuggestions = async () =>{
         try{
-          const response = await axios.get(`https://blog-post-project-api.vercel.app/posts?keyword=${search}`)
+          const response = await axios.get(`${endpoint}?keyword=${search}`)
           setSuggestion(response.data.posts);
         } catch(error) {
            console.error("Error fetching search results:", error);

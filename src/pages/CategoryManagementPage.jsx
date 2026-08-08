@@ -40,8 +40,8 @@ function CategoryManagementPage(){
         const sidebar=document.getElementById("sidebar");
         const overlay=document.getElementById("overlay");
 
-        sidebar.classNameList.toggle("-translate-x-full");
-        overlay.classNameList.toggle("hidden");
+        sidebar.classList.toggle("-translate-x-full");
+        overlay.classList.toggle("hidden");
 
     }
 

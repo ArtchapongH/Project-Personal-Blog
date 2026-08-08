@@ -2,7 +2,7 @@ import { useState } from 'react'
 import '../App.css'
 import SignUpPageFill from '../components/SignUpPageFill'
 import SignUpPageSubmit from '../components/SignUpPageSubmit'
-import useAuth from '../contexts/authenticaition.jsx'
+import { useAuth } from '../contexts/authenticaition.jsx'
 
 function SignUpPage() {
   const { register, state } = useAuth()
