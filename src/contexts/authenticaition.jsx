@@ -4,6 +4,10 @@ import { useNavigate } from "react-router-dom";
 
 const AuthContext = React.createContext();
 
+const API_BASE_URL = import.meta.env.DEV
+  ? "/api"
+  : import.meta.env.VITE_API_BASE_URL || "";
+
 function decodeJwtPayload(token) {
   try {
     const payload = token.split(".")[1];
@@ -35,7 +39,7 @@ function AuthProvider(props) {
         password: data?.password ?? data?.Password,
       };
 
-      const result = await axios.post("http://localhost:4000/login", payload);
+      const result = await axios.post(`${API_BASE_URL}/login`, payload);
       const token = result?.data?.token;
 
       if (!token) {
@@ -68,7 +72,7 @@ function AuthProvider(props) {
         password: data?.password ?? data?.Password,
         role: "user",
       };
-      await axios.post("http://localhost:4000/register", payload);
+      await axios.post(`${API_BASE_URL}/register`, payload);
       setState((prev) => ({ ...prev, loading: false }));
       navigate("/");
     } catch (error) {

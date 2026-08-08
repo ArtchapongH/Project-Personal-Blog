@@ -7,7 +7,9 @@ import userDuotoneIcon from "../icons/User_duotone.png"
 import refreshLightIcon from "../icons/Refresh_light.png"
 
 function MemberProfile(){
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+    const API_BASE_URL = import.meta.env.DEV
+        ? "/api"
+        : import.meta.env.VITE_API_BASE_URL || "";
     const { state } = useAuth();
     const userIdFromContext = state?.user?.id ?? state?.user?.userId ?? state?.user?._id ?? state?.user?.sub;
     const userIdFromToken = (() => {
@@ -50,34 +52,41 @@ function MemberProfile(){
             },
         };
 
-        const response = await axios.get(profileEndpoint, config);
+        try {
+            const response = await axios.get(profileEndpoint, config);
 
-        const profile = response?.data?.data ?? response?.data ?? {};
-        const {
-            name = "",
-            username = "",
-            email = "",
-        } = profile;
-        const profileImageFromApi =
-            profile?.profileImage ??
-            profile?.profile_pic ??
-            profile?.profilePic ??
-            profile?.profile_picture ??
-            null;
+            const profile = response?.data?.data ?? response?.data ?? {};
+            const {
+                name = "",
+                username = "",
+                email = "",
+            } = profile;
+            const profileImageFromApi =
+                profile?.profileImage ??
+                profile?.profile_pic ??
+                profile?.profilePic ??
+                profile?.profile_picture ??
+                null;
 
-        setName(name || "");
-        setUsername(username || "");
-        setEmail(email || "");
+            setName(name || "");
+            setUsername(username || "");
+            setEmail(email || "");
 
-        if (typeof profileImageFromApi === "string" && profileImageFromApi.trim()) {
-            setProfileImage(profileImageFromApi);
-        } else {
-            setProfileImage(null);
+            if (typeof profileImageFromApi === "string" && profileImageFromApi.trim()) {
+                setProfileImage(profileImageFromApi);
+            } else {
+                setProfileImage(null);
+            }
+
+            // Clear temporary client-side preview after loading server profile data.
+            setPreviewImageUrl("");
+            setSelectedImageFile(null);
+        } catch (error) {
+            console.error("Failed to load profile", error);
+            toast.error("Failed to load profile", {
+                description: error.response?.data?.message || error.message || "Please try again",
+            });
         }
-
-        // Clear temporary client-side preview after loading server profile data.
-        setPreviewImageUrl("");
-        setSelectedImageFile(null);
     }
 
     const fileInputRef = useRef(null);

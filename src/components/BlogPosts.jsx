@@ -2,13 +2,17 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import BlogCard from "./BlogCard";
 
+const API_BASE_URL = import.meta.env.DEV
+    ? "/api"
+    : import.meta.env.VITE_API_BASE_URL || "";
+
 function BlogPosts({ category }) {
     const [posts, setPosts] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
 
-    const endpoint = "http://localhost:4000/posts";
+    const endpoint = `${API_BASE_URL}/posts`;
 
     // ฟังก์ชันสำหรับโหลดข้อมูล
     const fetchPosts = async (pageNum, currentCategory) => {

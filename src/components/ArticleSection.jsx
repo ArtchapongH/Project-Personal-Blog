@@ -12,6 +12,10 @@ import axios from "axios";
 import BlogPosts from "./BlogPosts";
 import SearchResultBox from "./SearchResultBox";
 
+const API_BASE_URL = import.meta.env.DEV
+  ? "/api"
+  : import.meta.env.VITE_API_BASE_URL || "";
+
 function ArticleSection() {
 
   const categories = ["Highlight", "Cat", "Inspiration", "General"];
@@ -32,7 +36,7 @@ function ArticleSection() {
     getPosts();
   }, [category]);
 */
-  const endpoint = "http://localhost:4000/posts";
+  const endpoint = `${API_BASE_URL}/posts`;
 
   useEffect(()=>{
     
