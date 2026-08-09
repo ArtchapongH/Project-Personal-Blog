@@ -49,15 +49,15 @@ function ResetPasswordPage(){
 
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [isMobileDialogOpen, setIsMobileDialogOpen] = useState(false);
+    const [isDesktopDialogOpen, setIsDesktopDialogOpen] = useState(false);
     
     async function getUserProfileById(options = {}) {
         const { suppressAuthRedirect = false } = options;
         if (!userId) return;
 
-        const token = localStorage.getItem("token");
         const config = {
             headers: {
-                ...(token ? { Authorization: `Bearer ${token}` } : {}),
                 ...(suppressAuthRedirect ? { "X-Skip-Auth-Redirect": "true" } : {}),
             },
         };
@@ -78,7 +78,7 @@ function ResetPasswordPage(){
                 null;
 
             setUsername(username || "");
-            setPassword(password || profile?.currentPassword || "");
+            setPassword((prev) => password || profile?.currentPassword || prev);
 
             if (typeof profileImageFromApi === "string" && profileImageFromApi.trim()) {
                 setProfileImage(profileImageFromApi);
@@ -98,34 +98,56 @@ function ResetPasswordPage(){
         getUserProfileById();
     }, [userId]);
 
-    const handleResetPassword = async () => {
-        try {
+    const validatePasswordInputs = () => {
+        if (!newPassword || !confirmPassword) {
+            toast.error("Missing password", {
+                description: "Please fill in both new password and confirm password",
+            });
+            return false;
+        }
 
-            if (!newPassword || !confirmPassword) {
+        if (newPassword !== confirmPassword) {
+            toast.error("Password mismatch", {
+                description: "New password and confirm password do not match",
+            });
+            return false;
+        }
+
+        return true;
+    };
+
+    const openConfirmDialog = (setDialogOpen) => {
+        if (!validatePasswordInputs()) {
+            return;
+        }
+        setDialogOpen(true);
+    };
+
+    const handleResetPassword = async (setDialogOpen) => {
+        try {
+            if (!validatePasswordInputs()) {
+                return;
+            }
+
+            if (!userId) {
                 throw new Error("User id not found");
             }
 
-            if (!newPassword && !confirmPassword && newPassword !== confirmPassword) {
-                throw new Error("New password and confirm password do not match");
-            }
-
-            const formData = new FormData();
-            formData.append("password", newPassword);
-            
-
-
-            const token = localStorage.getItem("token");
-
-            await axios.put(profileEndpoint+"/password", formData, {
+            await axios.put(`${profileEndpoint}/password`, {
+                password: newPassword,
+            }, {
                 headers: {
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
                     "X-Skip-Auth-Redirect": "true",
                 },
             });
 
+            setPassword(newPassword);
             await getUserProfileById({ suppressAuthRedirect: true });
+            setNewPassword("");
+            setConfirmPassword("");
+            setDialogOpen(false);
 
-            toast.success("Reseted password", {
+            toast.success("Reset password", {
                 description: "Your profile has been successfully updated",
                 style: {
                     background: "#1878F3",
@@ -137,7 +159,8 @@ function ResetPasswordPage(){
             toast.error("Failed to reset password", {
                 description: error.response?.data?.message || error.message || "Please try again",
             });
-        } 
+        }
+    };
 
 
     const savedAvatarSrc = profileImage || userDuotoneIcon;
@@ -201,7 +224,7 @@ function ResetPasswordPage(){
                         <input 
                             type="password" 
                             id="current-password-mobile" 
-                            placeholder="Current password" 
+                            placeholder="••••••••" 
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="w-full px-4 py-3 rounded-lg border border-stone-300 bg-white text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-shadow shadow-sm"
@@ -237,10 +260,11 @@ function ResetPasswordPage(){
                     </div>
 
                     <div className="pt-2">
-                        <AlertDialog>
+                        <AlertDialog open={isMobileDialogOpen} onOpenChange={setIsMobileDialogOpen}>
                             <AlertDialogTrigger asChild>
                                 <button 
                                     type="button" 
+                                    onClick={() => openConfirmDialog(setIsMobileDialogOpen)}
                                     className="px-6 py-3 bg-[#231f1d] hover:bg-stone-800 text-stone-100 font-medium rounded-full shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-900"
                                 >
                                     Reset password
@@ -263,7 +287,10 @@ function ResetPasswordPage(){
                                     <AlertDialogCancel className="rounded-full border border-gray-300 px-6 py-2 text-sm font-medium hover:bg-gray-50">
                                         Cancel
                                     </AlertDialogCancel>
-                                    <AlertDialogAction className="rounded-full bg-black px-6 py-2 text-sm font-semibold hover:bg-gray-800">
+                                    <AlertDialogAction
+                                        onClick={() => handleResetPassword(setIsMobileDialogOpen)}
+                                        className="rounded-full bg-black px-6 py-2 text-sm font-semibold hover:bg-gray-800"
+                                    >
                                         Reset
                                     </AlertDialogAction>
                                 </AlertDialogFooter>
@@ -336,6 +363,8 @@ function ResetPasswordPage(){
                                     type="password" 
                                     id="new-password" 
                                     placeholder="New password" 
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
                                     className="w-full px-4 py-3 rounded-lg border border-stone-300 bg-white text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-shadow shadow-sm"
                                 />
                             </div>
@@ -347,18 +376,20 @@ function ResetPasswordPage(){
                                 <input 
                                     type="password" 
                                     id="confirm-password" 
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
                                     placeholder="Confirm new password" 
                                     className="w-full px-4 py-3 rounded-lg border border-stone-300 bg-white text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-shadow shadow-sm"
                                 />
                             </div>
 
                             <div className="pt-2">
-                                <AlertDialog>
+                                <AlertDialog open={isDesktopDialogOpen} onOpenChange={setIsDesktopDialogOpen}>
                                     <AlertDialogTrigger asChild>
                                         <button 
                                             type="button" 
                                             className="px-6 py-3 bg-[#231f1d] hover:bg-stone-800 text-stone-100 font-medium rounded-full shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-900"
-                                            onClick={handleResetPassword}
+                                            onClick={() => openConfirmDialog(setIsDesktopDialogOpen)}
                                         >
                                             Reset password
                                         </button>
@@ -380,7 +411,10 @@ function ResetPasswordPage(){
                                             <AlertDialogCancel className="rounded-full border border-gray-300 px-6 py-2 text-sm font-medium hover:bg-gray-50">
                                                 Cancel
                                             </AlertDialogCancel>
-                                            <AlertDialogAction className="rounded-full bg-black px-6 py-2 text-sm font-semibold hover:bg-gray-800">
+                                            <AlertDialogAction
+                                                onClick={() => handleResetPassword(setIsDesktopDialogOpen)}
+                                                className="rounded-full bg-black px-6 py-2 text-sm font-semibold hover:bg-gray-800"
+                                            >
                                                 Reset
                                             </AlertDialogAction>
                                         </AlertDialogFooter>

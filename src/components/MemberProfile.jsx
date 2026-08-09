@@ -44,10 +44,8 @@ function MemberProfile(){
         const { suppressAuthRedirect = false } = options;
         if (!userId) return;
 
-        const token = localStorage.getItem("token");
         const config = {
             headers: {
-                ...(token ? { Authorization: `Bearer ${token}` } : {}),
                 ...(suppressAuthRedirect ? { "X-Skip-Auth-Redirect": "true" } : {}),
             },
         };
@@ -136,11 +134,8 @@ function MemberProfile(){
                 formData.append("imageFile", selectedImageFile);
             }
 
-            const token = localStorage.getItem("token");
-
             await axios.put(profileEndpoint, formData, {
                 headers: {
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
                     "X-Skip-Auth-Redirect": "true",
                 },
             });
