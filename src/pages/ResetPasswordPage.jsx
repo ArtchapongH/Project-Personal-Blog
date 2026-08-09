@@ -8,12 +8,143 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { X } from "lucide-react";
+import { toast } from "sonner";
 import { Link } from "react-router-dom"
+import { useAuth } from "../contexts/authenticaition.jsx";
 import userDuotoneIcon from "../icons/User_duotone.png"
 import refreshLightIcon from "../icons/Refresh_light.png"
 
 function ResetPasswordPage(){
+
+     const API_BASE_URL = import.meta.env.DEV
+        ? "/api"
+        : import.meta.env.VITE_API_BASE_URL || "";
+    const { state } = useAuth();
+    const userIdFromContext = state?.user?.id ?? state?.user?.userId ?? state?.user?._id ?? state?.user?.sub;
+    const userIdFromToken = (() => {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return "";
+
+            const payload = token.split(".")[1];
+            if (!payload) return "";
+
+            const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+            const decoded = JSON.parse(atob(normalized));
+            return decoded?.id ?? decoded?.userId ?? decoded?._id ?? decoded?.sub ?? "";
+        } catch {
+            return "";
+        }
+    })();
+    const userId = userIdFromContext || userIdFromToken || "";
+    const profileEndpoint = `${API_BASE_URL}/profiles/${userId}`;
+
+    
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [profileImage, setProfileImage] = useState(null);
+
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    
+    async function getUserProfileById(options = {}) {
+        const { suppressAuthRedirect = false } = options;
+        if (!userId) return;
+
+        const token = localStorage.getItem("token");
+        const config = {
+            headers: {
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                ...(suppressAuthRedirect ? { "X-Skip-Auth-Redirect": "true" } : {}),
+            },
+        };
+
+        try {
+            const response = await axios.get(profileEndpoint, config);
+
+            const profile = response?.data?.data ?? response?.data ?? {};
+            const {
+                username = "",
+                password = "",
+            } = profile;
+            const profileImageFromApi =
+                profile?.profileImage ??
+                profile?.profile_pic ??
+                profile?.profilePic ??
+                profile?.profile_picture ??
+                null;
+
+            setUsername(username || "");
+            setPassword(password || profile?.currentPassword || "");
+
+            if (typeof profileImageFromApi === "string" && profileImageFromApi.trim()) {
+                setProfileImage(profileImageFromApi);
+            } else {
+                setProfileImage(null);
+            }
+        } catch (error) {
+            console.error("Failed to load profile", error);
+            toast.error("Failed to load profile", {
+                description: error.response?.data?.message || error.message || "Please try again",
+            });
+        }
+    }
+
+    useEffect(() => {
+        if (!userId) return;
+        getUserProfileById();
+    }, [userId]);
+
+    const handleResetPassword = async () => {
+        try {
+
+            if (!newPassword || !confirmPassword) {
+                throw new Error("User id not found");
+            }
+
+            if (!newPassword && !confirmPassword && newPassword !== confirmPassword) {
+                throw new Error("New password and confirm password do not match");
+            }
+
+            const formData = new FormData();
+            formData.append("password", newPassword);
+            
+
+
+            const token = localStorage.getItem("token");
+
+            await axios.put(profileEndpoint+"/password", formData, {
+                headers: {
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                    "X-Skip-Auth-Redirect": "true",
+                },
+            });
+
+            await getUserProfileById({ suppressAuthRedirect: true });
+
+            toast.success("Reseted password", {
+                description: "Your profile has been successfully updated",
+                style: {
+                    background: "#1878F3",
+                    borderColor: "#1878F3",
+                    color: "#FFFFFF"
+                },
+            });
+        } catch (error) {
+            toast.error("Failed to reset password", {
+                description: error.response?.data?.message || error.message || "Please try again",
+            });
+        } 
+
+
+    const savedAvatarSrc = profileImage || userDuotoneIcon;
+    const savedAvatarClassName = profileImage
+        ? "w-full h-full object-cover"
+        : "w-4 h-4 object-contain";
+
 
     return (
         <>
@@ -43,14 +174,16 @@ function ResetPasswordPage(){
                     
                     <div className="px-6 py-5 flex items-center justify-between border-b border-stone-200/60">
                         <div className="flex items-center gap-2">
-                            <div className="w-10 h-10 rounded-full overflow-hidden border border-stone-200 bg-stone-100 flex-shrink-0">
+                            <div className="w-10 h-10 rounded-full overflow-hidden border border-stone-200 bg-stone-100 flex-shrink-0 flex items-center justify-center">
                                 <img 
-                                    src="https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=150&auto=format&fit=crop&q=60" 
-                                    alt="Moo Deng Profile" 
-                                    className="w-full h-full object-cover" 
+                                    src={savedAvatarSrc}
+                                    alt="User profile"
+                                    className={savedAvatarClassName}
                                 />
                             </div>
-                            <span className="font-semibold text-stone-700 tracking-wide truncate max-w-[120px]">Mooden...</span>
+                            <span className="font-semibold text-stone-700 tracking-wide truncate max-w-[120px]">
+                                {username || "Member"}
+                            </span>
                         </div>
                         
                         <div className="h-6 w-px bg-stone-300 mx-2"></div>
@@ -69,6 +202,8 @@ function ResetPasswordPage(){
                             type="password" 
                             id="current-password-mobile" 
                             placeholder="Current password" 
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                             className="w-full px-4 py-3 rounded-lg border border-stone-300 bg-white text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-shadow shadow-sm"
                         />
                     </div>
@@ -80,7 +215,9 @@ function ResetPasswordPage(){
                         <input 
                             type="password" 
                             id="new-password-mobile" 
-                            placeholder="New password" 
+                            placeholder="New password"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)} 
                             className="w-full px-4 py-3 rounded-lg border border-stone-300 bg-white text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-shadow shadow-sm"
                         />
                     </div>
@@ -92,6 +229,8 @@ function ResetPasswordPage(){
                         <input 
                             type="password" 
                             id="confirm-password-mobile" 
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
                             placeholder="Confirm new password" 
                             className="w-full px-4 py-3 rounded-lg border border-stone-300 bg-white text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-shadow shadow-sm"
                         />
@@ -138,14 +277,14 @@ function ResetPasswordPage(){
             <div className="hidden md:block md:max-w-4xl md:mx-auto md:mt-8 md:w-full">
                 {/* Top Header with Profile and Title */}
                 <div className="bg-white rounded-t-xl px-6 py-4 flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full overflow-hidden border border-stone-200 bg-stone-100 flex-shrink-0">
+                    <div className="w-12 h-12 rounded-full overflow-hidden border border-stone-200 bg-stone-100 flex-shrink-0 flex items-center justify-center">
                         <img 
-                            src="https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=150&auto=format&fit=crop&q=60" 
-                            alt="Moo Deng Profile" 
-                            className="w-full h-full object-cover" 
+                            src={savedAvatarSrc}
+                            alt="User profile"
+                            className={savedAvatarClassName}
                         />
                     </div>
-                    <span className="font-semibold text-stone-700 text-lg">Moodeng ja</span>
+                    <span className="font-semibold text-stone-700 text-lg">{username || "Member"}</span>
                     <span className="text-stone-400 mx-2">|</span>
                     <h1 className="text-lg font-semibold text-stone-900">Reset password</h1>
                 </div>
@@ -183,6 +322,8 @@ function ResetPasswordPage(){
                                     type="password" 
                                     id="current-password" 
                                     placeholder="Current password" 
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
                                     className="w-full px-4 py-3 rounded-lg border border-stone-300 bg-white text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-shadow shadow-sm"
                                 />
                             </div>
@@ -217,6 +358,7 @@ function ResetPasswordPage(){
                                         <button 
                                             type="button" 
                                             className="px-6 py-3 bg-[#231f1d] hover:bg-stone-800 text-stone-100 font-medium rounded-full shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-900"
+                                            onClick={handleResetPassword}
                                         >
                                             Reset password
                                         </button>
