@@ -11,9 +11,14 @@ import addRoundLightIcon from "../icons/Add_round_light.png";
 import searchLightIcon from "../icons/Search_light.png";
 import { useNavigate } from "react-router-dom";
 
+import { useAuth } from "../contexts/authenticaition.jsx";
+
+
 function CategoryCreatePage(){
     const navigate = useNavigate();
-
+    
+    const {logout} = useAuth();
+    
     return(
         <>
         <div className="bg-[#FBFBFA] font-sans">
@@ -91,7 +96,9 @@ function CategoryCreatePage(){
                                     </button>
                         
                                     <button 
-                                        onClick={() => navigate("/")}
+                                        onClick={() => {
+                                            logout();
+                                        }}
                                         className="flex items-center gap-3 px-8 py-4 text-sm text-gray-500 w-full text-left hover:bg-gray-100"
                                     >
                                         <img src={signOutSquareLightIcon} alt="SignOut icon" className="w-4 h-4 object-contain" />

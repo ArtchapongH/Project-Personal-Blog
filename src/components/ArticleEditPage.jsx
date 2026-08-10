@@ -14,6 +14,8 @@ import trashLightIcon from "../icons/Trash_light.png";
 import addRoundLightIcon from "../icons/Add_round_light.png";
 import searchLightIcon from "../icons/Search_light.png";
 
+import { useAuth } from "../contexts/authenticaition.jsx";
+
 
 function ArticleEditPage(){
     const categories = ["Highlight", "Cat", "Inspiration", "General"];
@@ -25,8 +27,10 @@ function ArticleEditPage(){
     const [description, setDescription] = useState("");
     const [content, setContent] = useState("");
 
-        const { postId } = useParams();
+    const { postId } = useParams();
     const navigate = useNavigate();
+
+    const {logout} = useAuth();
 
     async function getPostById() {
                 const response = await axios.get(`https://blog-post-project-api.vercel.app/posts/${postId}`);
@@ -139,7 +143,9 @@ function ArticleEditPage(){
                 </button>
     
                 <button 
-                    onClick={() => navigate("/")}
+                    onClick={() => {
+                                logout();
+                            }}
                     className="flex items-center gap-3 px-8 py-4 text-sm text-gray-500 w-full text-left hover:bg-gray-100"
                 >
                     <img src={signOutSquareLightIcon} alt="SignOut icon" className="w-4 h-4 object-contain" />

@@ -28,7 +28,7 @@ import LandingPageMember from "./pages/LandingPageMember";
 import {useAuth} from "./contexts/authenticaition.jsx";
 
 function App() {
-  const auth = useAuth();
+  const auth = useAuth() ?? { isAuthenticated: false };
 
   return (
     <>
@@ -43,6 +43,26 @@ function App() {
 
         <Route path="/membership" element={<MemberProfile />} />
         <Route path="/reset" element={<ResetPasswordPage />} />
+
+        <Route path="/admin/login" element={<AdminLogInPage />} />
+        <Route path="/admin/article/mgt" element={<ArticleManagementPage />} />
+        <Route path="/admin/article/create" element={<ArticleCreatePage />} />
+        <Route path="/admin/article/edit/:postId" element={<ArticleEditPage />} />
+        <Route path="/admin/article/delete/:postId" element={<DeleteArticle />} />
+        <Route path="/admin/category/mgt" element={<CategoryManagementPage />} />
+        <Route path="/admin/category/create" element={<CategoryCreatePage />} />
+        <Route path="/admin/profile" element={<ProfilePage />} />
+        <Route path="/admin/notification" element={<NotificationPage />} />
+        <Route path="/admin/reset" element={<AdminResetPasswordPage />} />
+
+        <Route path="/post/:postId" element={<ViewPostPage />} />
+        <Route path="/membership/menu" element={<MemberPopUpMenu />} />
+        <Route path="/membership/notification" element={<MemberPopUpNotification />} />
+        <Route path="/membership/menu/noti" element={<MemberPopUpMenuNoti />} />
+        <Route path="/navbar/login" element={<NavBarLogIn />} />
+        <Route path="/comment" element={<ViewComments />} />
+        <Route path="/health-test" element={<HealthTestPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
 
       <Toaster position="bottom-right" closeButton richColors />

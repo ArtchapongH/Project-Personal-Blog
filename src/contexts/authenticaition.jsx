@@ -2,7 +2,19 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const AuthContext = React.createContext();
+const defaultAuthContext = {
+  state: {
+    loading: false,
+    error: null,
+    user: null,
+  },
+  login: async () => {},
+  logout: () => {},
+  register: async () => {},
+  isAuthenticated: false,
+};
+
+const AuthContext = React.createContext(defaultAuthContext);
 
 const API_BASE_URL = import.meta.env.DEV
   ? "/api"
@@ -49,8 +61,9 @@ function AuthProvider(props) {
       localStorage.setItem("token", token);
 
       const userDataFromToken = decodeJwtPayload(token);
+      const isAdminLogin = userDataFromToken?.role === "admin";
       setState((prev) => ({ ...prev, user: userDataFromToken, loading: false }));
-      navigate("/");
+      navigate(isAdminLogin ? "/admin/article/mgt" : "/");
     } catch (error) {
       setState((prev) => ({
         ...prev,
@@ -65,12 +78,16 @@ function AuthProvider(props) {
     try {
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
+      const email = (data?.email ?? data?.Email ?? "").trim();
+      const normalizedEmail = email.toLowerCase();
+      const role = normalizedEmail === "adminnick@gmail.com" ? "admin" : "user";
+
       const payload = {
         name: data?.name ?? data?.Name,
         username: data?.username ?? data?.Username,
-        email: data?.email ?? data?.Email,
+        email,
         password: data?.password ?? data?.Password,
-        role: "user",
+        role,
       };
       await axios.post(`${API_BASE_URL}/register`, payload);
       setState((prev) => ({ ...prev, loading: false }));

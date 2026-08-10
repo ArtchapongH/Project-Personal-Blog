@@ -14,11 +14,14 @@ import trashLightIcon from "../icons/Trash_light.png";
 import addRoundLightIcon from "../icons/Add_round_light.png";
 import searchLightIcon from "../icons/Search_light.png";
 
+import { useAuth } from "../contexts/authenticaition.jsx";
 
 function CategoryManagementPage(){
     const navigate = useNavigate();
     const location = useLocation();
     const categoryNames = ["Cat", "General", "Inspiration"];
+
+    const {logout} = useAuth();
 
     useEffect(() => {
         if (location.state?.showCreateCategoryToast) {
@@ -124,7 +127,9 @@ function CategoryManagementPage(){
                         </button>
             
                         <button 
-                            onClick={() => navigate("/")}
+                            onClick={() => {
+                                logout();
+                            }}
                             className="flex items-center gap-3 px-8 py-4 text-sm text-gray-500 w-full text-left hover:bg-gray-100"
                         >
                             <img src={signOutSquareLightIcon} alt="SignOut icon" className="w-4 h-4 object-contain" />
