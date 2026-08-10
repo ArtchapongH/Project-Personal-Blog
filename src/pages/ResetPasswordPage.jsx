@@ -44,7 +44,7 @@ function ResetPasswordPage(){
 
     
     const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
+    const [currentPasswordInput, setCurrentPasswordInput] = useState("");
     const [profileImage, setProfileImage] = useState(null);
 
     const [newPassword, setNewPassword] = useState("");
@@ -67,8 +67,8 @@ function ResetPasswordPage(){
 
             const profile = response?.data?.data ?? response?.data ?? {};
             const {
-                username = "",
-                password = "",
+                username = ""
+                //password = "",
             } = profile;
             const profileImageFromApi =
                 profile?.profileImage ??
@@ -78,7 +78,7 @@ function ResetPasswordPage(){
                 null;
 
             setUsername(username || "");
-            setPassword((prev) => password || profile?.currentPassword || prev);
+            //setCurrentPasswordInput(typeof password === "string" ? password : "");
 
             if (typeof profileImageFromApi === "string" && profileImageFromApi.trim()) {
                 setProfileImage(profileImageFromApi);
@@ -99,9 +99,9 @@ function ResetPasswordPage(){
     }, [userId]);
 
     const validatePasswordInputs = () => {
-        if (!newPassword || !confirmPassword) {
+        if (!currentPasswordInput || !newPassword || !confirmPassword) {
             toast.error("Missing password", {
-                description: "Please fill in both new password and confirm password",
+                description: "Please fill in current, new and confirm password",
             });
             return false;
         }
@@ -134,6 +134,7 @@ function ResetPasswordPage(){
             }
 
             await axios.put(`${profileEndpoint}/password`, {
+                currentPassword: currentPasswordInput,
                 password: newPassword,
             }, {
                 headers: {
@@ -141,7 +142,7 @@ function ResetPasswordPage(){
                 },
             });
 
-            setPassword(newPassword);
+            setCurrentPasswordInput("");
             await getUserProfileById({ suppressAuthRedirect: true });
             setNewPassword("");
             setConfirmPassword("");
@@ -225,8 +226,8 @@ function ResetPasswordPage(){
                             type="password" 
                             id="current-password-mobile" 
                             placeholder="••••••••" 
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            value={currentPasswordInput}
+                            onChange={(e) => setCurrentPasswordInput(e.target.value)}
                             className="w-full px-4 py-3 rounded-lg border border-stone-300 bg-white text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-shadow shadow-sm"
                         />
                     </div>
@@ -349,8 +350,8 @@ function ResetPasswordPage(){
                                     type="password" 
                                     id="current-password" 
                                     placeholder="Current password" 
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
+                                    value={currentPasswordInput}
+                                    onChange={(e) => setCurrentPasswordInput(e.target.value)}
                                     className="w-full px-4 py-3 rounded-lg border border-stone-300 bg-white text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-shadow shadow-sm"
                                 />
                             </div>
