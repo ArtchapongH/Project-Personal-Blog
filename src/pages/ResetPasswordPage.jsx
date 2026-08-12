@@ -19,7 +19,7 @@ import refreshLightIcon from "../icons/Refresh_light.png"
 
 function ResetPasswordPage(){
 
-     const API_BASE_URL = import.meta.env.DEV
+    const API_BASE_URL = import.meta.env.DEV
         ? "/api"
         : import.meta.env.VITE_API_BASE_URL || "";
     const { state } = useAuth();

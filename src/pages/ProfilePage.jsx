@@ -1,5 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useEffect, useRef, useState } from "react"
+import axios from "axios"
 
 import notebookLightIcon from "../icons/notebook_light.png";
 import fileLightIcon from "../icons/File_light.png";
@@ -15,20 +17,172 @@ import searchLightIcon from "../icons/Search_light.png";
 
 import { useAuth } from "../contexts/authenticaition.jsx";
 
+
 function ProfilePage(){
     const navigate = useNavigate();
     const {logout} = useAuth();
 
-    const handleSave = () => {
-        toast.success("Saved profile", {
-            description: "Your profile has been successfully updated",
-            style: {
+    const API_BASE_URL = import.meta.env.DEV
+            ? "/api"
+            : import.meta.env.VITE_API_BASE_URL || "";
+    const { state } = useAuth();
+    const userIdFromContext = state?.user?.id ?? state?.user?.userId ?? state?.user?._id ?? state?.user?.sub;
+    const userIdFromToken = (() => {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return "";
+
+            const payload = token.split(".")[1];
+            if (!payload) return "";
+
+            const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+            const decoded = JSON.parse(atob(normalized));
+            return decoded?.id ?? decoded?.userId ?? decoded?._id ?? decoded?.sub ?? "";
+        } catch {
+            return "";
+        }
+    })();
+    const userId = userIdFromContext || userIdFromToken || "";
+    const profileEndpoint = `${API_BASE_URL}/profiles/${userId}`;
+
+    const [name, setName] = useState("");
+    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [profileImage, setProfileImage] = useState(null);
+    const [biography, setBiography] = useState("");
+
+    const [selectedImageFile, setSelectedImageFile] = useState(null);
+    const [previewImageUrl, setPreviewImageUrl] = useState("");
+    const [isSaving, setIsSaving] = useState(false);
+
+    async function getUserProfileById(options = {}) {
+        const { suppressAuthRedirect = false } = options;
+        if (!userId) return;
+
+        const config = {
+            headers: {
+                ...(suppressAuthRedirect ? { "X-Skip-Auth-Redirect": "true" } : {}),
+            },
+        };
+
+        try {
+            const response = await axios.get(profileEndpoint, config);
+
+            const profile = response?.data?.data ?? response?.data ?? {};
+            const {
+                name = "",
+                username = "",
+                email = "",
+            } = profile;
+            const profileImageFromApi =
+                profile?.profileImage ??
+                profile?.profile_pic ??
+                profile?.profilePic ??
+                profile?.profile_picture ??
+                null;
+
+            setName(name || "");
+            setUsername(username || "");
+            setEmail(email || "");
+
+            if (typeof profileImageFromApi === "string" && profileImageFromApi.trim()) {
+                setProfileImage(profileImageFromApi);
+            } else {
+                setProfileImage(null);
+            }
+
+            // Clear temporary client-side preview after loading server profile data.
+            setPreviewImageUrl("");
+            setSelectedImageFile(null);
+        } catch (error) {
+            console.error("Failed to load profile", error);
+            toast.error("Failed to load profile", {
+                description: error.response?.data?.message || error.message || "Please try again",
+            });
+        }
+    }
+
+    const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        if (!selectedImageFile) {
+            return;
+        }
+
+        const objectUrl = URL.createObjectURL(selectedImageFile);
+        setPreviewImageUrl(objectUrl);
+
+        return () => {
+            URL.revokeObjectURL(objectUrl);
+        };
+    }, [selectedImageFile]);
+
+    useEffect(() => {
+        if (!userId) return;
+        getUserProfileById();
+    }, [userId]);
+
+    const handleOpenFilePicker = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleImageSelect = (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setSelectedImageFile(file);
+    };
+
+    const handleSave = async () => {
+        try {
+            setIsSaving(true);
+
+            if (!userId) {
+                throw new Error("User id not found");
+            }
+
+            const formData = new FormData();
+            formData.append("name", name);
+            formData.append("username", username);
+            formData.append("email", email);
+            formData.append("biography", biography);
+
+            if (selectedImageFile) {
+                formData.append("imageFile", selectedImageFile);
+            }
+
+            await axios.put(profileEndpoint, formData, {
+                headers: {
+                    "X-Skip-Auth-Redirect": "true",
+                },
+            });
+
+            await getUserProfileById({ suppressAuthRedirect: true });
+
+            toast.success("Saved profile", {
+                description: "Your profile has been successfully updated",
+                style: {
                     background: "#1878F3",
                     borderColor: "#1878F3",
-                    color: "#FFFFFF",
+                    color: "#FFFFFF"
                 },
-        });
+            });
+        } catch (error) {
+            toast.error("Failed to save profile", {
+                description: error.response?.data?.message || error.message || "Please try again",
+            });
+        } finally {
+            setIsSaving(false);
+        }
     };
+
+    const savedAvatarSrc = profileImage || userDuotoneIcon;
+    const savedAvatarClassName = profileImage ? "w-full h-full object-cover" : "w-4 h-4 object-contain";
+    const formAvatarSrc = previewImageUrl || profileImage || userDuotoneIcon;
+    const formAvatarClassName = (previewImageUrl || profileImage)
+        ? "w-full h-full object-cover"
+        : "w-4 h-4 object-contain";
 
     return(
         <>

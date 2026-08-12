@@ -11,6 +11,11 @@ import {
 import { X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { toast } from "sonner";
+import { Link } from "react-router-dom"
+
 import notebookLightIcon from "../icons/notebook_light.png";
 import fileLightIcon from "../icons/File_light.png";
 import userDuotoneIcon from "../icons/User_duotone.png";
@@ -28,6 +33,159 @@ import { useAuth } from "../contexts/authenticaition.jsx";
 function AdminResetPasswordPage(){
     const navigate = useNavigate();
     const {logout} = useAuth();
+
+    const API_BASE_URL = import.meta.env.DEV
+        ? "/api"
+        : import.meta.env.VITE_API_BASE_URL || "";
+    const { state } = useAuth();
+    const userIdFromContext = state?.user?.id ?? state?.user?.userId ?? state?.user?._id ?? state?.user?.sub;
+    const userIdFromToken = (() => {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return "";
+
+            const payload = token.split(".")[1];
+            if (!payload) return "";
+
+            const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+            const decoded = JSON.parse(atob(normalized));
+            return decoded?.id ?? decoded?.userId ?? decoded?._id ?? decoded?.sub ?? "";
+        } catch {
+            return "";
+        }
+    })();
+    const userId = userIdFromContext || userIdFromToken || "";
+    const profileEndpoint = `${API_BASE_URL}/profiles/${userId}`;
+
+    
+    const [username, setUsername] = useState("");
+    const [currentPasswordInput, setCurrentPasswordInput] = useState("");
+    //const [profileImage, setProfileImage] = useState(null);
+
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    //const [isMobileDialogOpen, setIsMobileDialogOpen] = useState(false);
+    const [isDesktopDialogOpen, setIsDesktopDialogOpen] = useState(false);
+    
+    async function getUserProfileById(options = {}) {
+        const { suppressAuthRedirect = false } = options;
+        if (!userId) return;
+
+        const config = {
+            headers: {
+                ...(suppressAuthRedirect ? { "X-Skip-Auth-Redirect": "true" } : {}),
+            },
+        };
+
+        try {
+            const response = await axios.get(profileEndpoint, config);
+
+            const profile = response?.data?.data ?? response?.data ?? {};
+            const {
+                username = ""
+                //password = "",
+            } = profile;
+            /*
+            const profileImageFromApi =
+                profile?.profileImage ??
+                profile?.profile_pic ??
+                profile?.profilePic ??
+                profile?.profile_picture ??
+                null;
+            */
+            setUsername(username || "");
+            //setCurrentPasswordInput(typeof password === "string" ? password : "");
+            /*
+            if (typeof profileImageFromApi === "string" && profileImageFromApi.trim()) {
+                setProfileImage(profileImageFromApi);
+            } else {
+                setProfileImage(null);
+            }
+            */
+        } catch (error) {
+            console.error("Failed to load profile", error);
+            toast.error("Failed to load profile", {
+                description: error.response?.data?.message || error.message || "Please try again",
+            });
+        }
+    }
+
+    useEffect(() => {
+        if (!userId) return;
+        getUserProfileById();
+    }, [userId]);
+
+    const validatePasswordInputs = () => {
+        if (!currentPasswordInput || !newPassword || !confirmPassword) {
+            toast.error("Missing password", {
+                description: "Please fill in current, new and confirm password",
+            });
+            return false;
+        }
+
+        if (newPassword !== confirmPassword) {
+            toast.error("Password mismatch", {
+                description: "New password and confirm password do not match",
+            });
+            return false;
+        }
+
+        return true;
+    };
+
+    const openConfirmDialog = (setDialogOpen) => {
+        if (!validatePasswordInputs()) {
+            return;
+        }
+        setDialogOpen(true);
+    };
+
+    const handleResetPassword = async (setDialogOpen) => {
+        try {
+            if (!validatePasswordInputs()) {
+                return;
+            }
+
+            if (!userId) {
+                throw new Error("User id not found");
+            }
+
+            await axios.put(`${profileEndpoint}/password`, {
+                currentPassword: currentPasswordInput,
+                password: newPassword,
+            }, {
+                headers: {
+                    "X-Skip-Auth-Redirect": "true",
+                },
+            });
+
+            setCurrentPasswordInput("");
+            await getUserProfileById({ suppressAuthRedirect: true });
+            setNewPassword("");
+            setConfirmPassword("");
+            setDialogOpen(false);
+
+            toast.success("Reset password", {
+                description: "Your profile has been successfully updated",
+                style: {
+                    background: "#1878F3",
+                    borderColor: "#1878F3",
+                    color: "#FFFFFF"
+                },
+            });
+        } catch (error) {
+            toast.error("Failed to reset password", {
+                description: error.response?.data?.message || error.message || "Please try again",
+            });
+        }
+    };
+
+
+    const savedAvatarSrc = profileImage || userDuotoneIcon;
+    const savedAvatarClassName = profileImage
+        ? "w-full h-full object-cover"
+        : "w-4 h-4 object-contain";
+
     return(
         <>
 
