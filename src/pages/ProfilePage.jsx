@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react"
 import axios from "axios"
@@ -10,10 +10,6 @@ import bellLightIcon from "../icons/Bell_light.png";
 import refreshLightIcon from "../icons/Refresh_light.png";
 import outLightIcon from "../icons/Out_light.png";
 import signOutSquareLightIcon from "../icons/Sign_out_squre_light.png";
-import editLightIcon from "../icons/Edit_light.png";
-import trashLightIcon from "../icons/Trash_light.png";
-import addRoundLightIcon from "../icons/Add_round_light.png";
-import searchLightIcon from "../icons/Search_light.png";
 
 import { useAuth } from "../contexts/authenticaition.jsx";
 
@@ -48,7 +44,6 @@ function ProfilePage(){
     const [name, setName] = useState("");
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
     const [profileImage, setProfileImage] = useState(null);
     const [biography, setBiography] = useState("");
 
@@ -75,6 +70,11 @@ function ProfilePage(){
                 username = "",
                 email = "",
             } = profile;
+            const biographyFromApi =
+                profile?.biography ??
+                profile?.bio ??
+                profile?.about ??
+                "";
             const profileImageFromApi =
                 profile?.profileImage ??
                 profile?.profile_pic ??
@@ -85,6 +85,7 @@ function ProfilePage(){
             setName(name || "");
             setUsername(username || "");
             setEmail(email || "");
+            setBiography(biographyFromApi || "");
 
             if (typeof profileImageFromApi === "string" && profileImageFromApi.trim()) {
                 setProfileImage(profileImageFromApi);
@@ -177,8 +178,6 @@ function ProfilePage(){
         }
     };
 
-    const savedAvatarSrc = profileImage || userDuotoneIcon;
-    const savedAvatarClassName = profileImage ? "w-full h-full object-cover" : "w-4 h-4 object-contain";
     const formAvatarSrc = previewImageUrl || profileImage || userDuotoneIcon;
     const formAvatarClassName = (previewImageUrl || profileImage)
         ? "w-full h-full object-cover"
@@ -186,6 +185,13 @@ function ProfilePage(){
 
     return(
         <>
+        <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageSelect}
+        />
 
         <div className="bg-white">
 
@@ -279,7 +285,7 @@ function ProfilePage(){
             <main className="flex-1 bg-white flex flex-col overflow-hidden">
 
                 {/* Header */}
-                <header className="flex items-center justify-between px-8 py-4 border-b border-gray-200 flex-shrink-0">
+                <header className="flex items-center justify-between px-8 py-4 border-b border-gray-200 shrink-0">
 
                     <h2 className="text-2xl font-semibold text-gray-800">
                         Profile
@@ -288,8 +294,9 @@ function ProfilePage(){
                     <button
                         type="button"
                         onClick={handleSave}
+                        disabled={isSaving}
                         className="bg-[#2B2622] text-white px-8 py-2 rounded-full text-sm hover:bg-black transition">
-                        Save
+                        {isSaving ? "Saving..." : "Save"}
                     </button>
 
                 </header>
@@ -300,12 +307,17 @@ function ProfilePage(){
                     {/* Avatar */}
                     <div className="flex items-center gap-6 mb-6">
 
-                        <img
-                            src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80"
-                            alt="Profile"
-                            className="w-20 h-20 rounded-full object-cover"/>
+                        <div className="w-20 h-20 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden">
+                            <img
+                                src={formAvatarSrc}
+                                alt="Profile"
+                                className={formAvatarClassName}
+                            />
+                        </div>
 
                         <button
+                            type="button"
+                            onClick={handleOpenFilePicker}
                             className="border border-gray-400 rounded-full px-6 py-2 text-sm hover:bg-gray-100 transition">
 
                             Upload profile picture
@@ -314,7 +326,7 @@ function ProfilePage(){
 
                     </div>
 
-                    <div className="border-t border-gray-200 w-[500px] mb-6"></div>
+                    <div className="border-t border-gray-200 w-125 mb-6"></div>
 
                     {/* Form */}
                     <div className="space-y-4 max-w-xl">
@@ -328,7 +340,8 @@ function ProfilePage(){
 
                             <input
                                 type="text"
-                                defaultValue="Thompson P."
+                                value={name}
+                                onChange={(event) => setName(event.target.value)}
                                 className="w-full h-11 px-4 rounded-md border border-gray-300 focus:ring-2 focus:ring-gray-400 focus:outline-none"/>
 
                         </div>
@@ -342,7 +355,8 @@ function ProfilePage(){
 
                             <input
                                 type="text"
-                                defaultValue="thompson"
+                                value={username}
+                                onChange={(event) => setUsername(event.target.value)}
                                 className="w-full h-11 px-4 rounded-md border border-gray-300 focus:ring-2 focus:ring-gray-400 focus:outline-none"/>
 
                         </div>
@@ -356,7 +370,8 @@ function ProfilePage(){
 
                             <input
                                 type="email"
-                                defaultValue="thompson.p@gmail.com"
+                                value={email}
+                                onChange={(event) => setEmail(event.target.value)}
                                 className="w-full h-11 px-4 rounded-md border border-gray-300 focus:ring-2 focus:ring-gray-400 focus:outline-none"/>
 
                         </div>
@@ -370,9 +385,15 @@ function ProfilePage(){
 
                             <textarea
                                 rows="4"
-                                defaultValue="I am a pet enthusiast and freelance writer who specializes in animal behavior and care. With a deep love for cats, I enjoy sharing insights on feline companionship and wellness.&#10;&#10;When I'm not writing, I spends time volunteering at my local animal shelter, helping cats find loving homes."
+                                maxLength={120}
+                                value={biography}
+                                onChange={(event) => setBiography(event.target.value)}
                                 className="w-full px-4 py-3 rounded-md border border-gray-300 resize-none focus:ring-2 focus:ring-gray-400 focus:outline-none">
                             </textarea>
+
+                            <p className="mt-1 text-xs text-gray-500 text-right">
+                                {biography.length}/120
+                            </p>
 
                         </div>
 
