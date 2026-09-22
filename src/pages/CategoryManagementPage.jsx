@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -11,17 +12,39 @@ import outLightIcon from "../icons/Out_light.png";
 import signOutSquareLightIcon from "../icons/Sign_out_squre_light.png";
 import editLightIcon from "../icons/Edit_light.png";
 import trashLightIcon from "../icons/Trash_light.png";
-import addRoundLightIcon from "../icons/Add_round_light.png";
-import searchLightIcon from "../icons/Search_light.png";
 
 import { useAuth } from "../contexts/authenticaition.jsx";
 
 function CategoryManagementPage(){
     const navigate = useNavigate();
     const location = useLocation();
-    const categoryNames = ["Cat", "General", "Inspiration"];
+    const [categories, setCategories] = useState([]);
 
     const {logout} = useAuth();
+
+    useEffect(() => {
+        let isMounted = true;
+
+        async function getCategories() {
+            try {
+                const response = await axios.get("/api/categories");
+                if (isMounted) {
+                    setCategories(response.data.categories ?? []);
+                }
+            } catch (error) {
+                console.error("Failed to fetch categories:", error);
+                if (isMounted) {
+                    setCategories([]);
+                }
+            }
+        }
+
+        getCategories();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [location.key]);
 
     useEffect(() => {
         if (location.state?.showCreateCategoryToast) {
@@ -152,15 +175,15 @@ function CategoryManagementPage(){
                         {/* Mobile Button */}
                         <button
                             className="md:hidden"
-                            onclick="toggleSidebar()">
+                            onClick={toggleSidebar}>
 
                             <svg className="w-7 h-7"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24">
 
-                                <path stroke-width="2"
-                                    stroke-linecap="round"
+                                <path strokeWidth="2"
+                                    strokeLinecap="round"
                                     d="M4 6h16M4 12h16M4 18h16"/>
                             </svg>
 
@@ -202,22 +225,32 @@ function CategoryManagementPage(){
                             <div></div>
                         </div>
 
-                        {categoryNames.map((categoryName, index) => (
+                        {categories.map((category, index) => (
                             <div
-                                key={categoryName}
+                                key={category.id}
                                 className={`grid grid-cols-[1fr_90px] items-center px-5 py-4 ${
-                                    index < categoryNames.length - 1 ? "border-b" : ""
+                                    index < categories.length - 1 ? "border-b" : ""
                                 } hover:bg-gray-50`}
                             >
-                                <div>{categoryName}</div>
+                                <div>{category.name}</div>
 
                                 <div className="flex justify-end gap-4">
 
-                                    <button onClick={() => navigate("/admin/category/create")}>
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate("/admin/category/create", {
+                                            state: { category },
+                                        })}
+                                    >
                                          <img src={editLightIcon} alt="Category icon" className="w-4 h-4 object-contain" />
                                     </button>
 
-                                    <button>
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate("/admin/category/delete", {
+                                            state: { category },
+                                        })}
+                                    >
                                          <img src={trashLightIcon} alt="Category icon" className="w-4 h-4 object-contain" />
                                     </button>
 
@@ -237,7 +270,7 @@ function CategoryManagementPage(){
         <div
             id="overlay"
             className="hidden fixed inset-0 bg-black/40 md:hidden"
-            onclick="toggleSidebar()">
+            onClick={toggleSidebar}>
 
         </div>
 

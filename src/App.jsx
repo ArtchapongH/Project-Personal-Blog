@@ -17,6 +17,7 @@ import ArticleEditPage from "./components/ArticleEditPage";
 import ViewComments from "./components/ViewComments";
 import CategoryManagementPage from "./pages/CategoryManagementPage";
 import CategoryCreatePage from "./pages/CategoryCreatePage";
+import CategoryDeletePage from "./pages/CategoryDeletePage";
 import ProfilePage from "./pages/ProfilePage";
 import NotificationPage from "./pages/NotificationPage";
 import AdminResetPasswordPage from "./pages/AdminResetPasswordPage";
@@ -51,6 +52,7 @@ function App() {
         <Route path="/admin/article/delete/:postId" element={<DeleteArticle />} />
         <Route path="/admin/category/mgt" element={<CategoryManagementPage />} />
         <Route path="/admin/category/create" element={<CategoryCreatePage />} />
+        <Route path="/admin/category/delete" element={<CategoryDeletePage />} />
         <Route path="/admin/profile" element={<ProfilePage />} />
         <Route path="/admin/notification" element={<NotificationPage />} />
         <Route path="/admin/reset" element={<AdminResetPasswordPage />} />

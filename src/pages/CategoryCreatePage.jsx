@@ -1,3 +1,5 @@
+import axios from "axios";
+import { useState } from "react";
 import notebookLightIcon from "../icons/notebook_light.png";
 import fileLightIcon from "../icons/File_light.png";
 import userDuotoneIcon from "../icons/User_duotone.png";
@@ -5,19 +7,45 @@ import bellLightIcon from "../icons/Bell_light.png";
 import refreshLightIcon from "../icons/Refresh_light.png";
 import outLightIcon from "../icons/Out_light.png";
 import signOutSquareLightIcon from "../icons/Sign_out_squre_light.png";
-import editLightIcon from "../icons/Edit_light.png";
-import trashLightIcon from "../icons/Trash_light.png";
-import addRoundLightIcon from "../icons/Add_round_light.png";
-import searchLightIcon from "../icons/Search_light.png";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 import { useAuth } from "../contexts/authenticaition.jsx";
 
 
 function CategoryCreatePage(){
     const navigate = useNavigate();
+    const location = useLocation();
+    const categoryToEdit = location.state?.category;
+    const [categoryName, setCategoryName] = useState(categoryToEdit?.name ?? "");
+    const [isSaving, setIsSaving] = useState(false);
     
     const {logout} = useAuth();
+
+    async function handleSave() {
+        const name = categoryName.trim();
+
+        if (!name) {
+            toast.error("Category name is required.");
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            if (categoryToEdit) {
+                await axios.patch(`/api/categories/${categoryToEdit.id}`, { name });
+            } else {
+                await axios.post("/api/categories", { name });
+            }
+            navigate("/admin/category/mgt", {
+                state: { showCreateCategoryToast: !categoryToEdit },
+            });
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Unable to save category.");
+        } finally {
+            setIsSaving(false);
+        }
+    }
     
     return(
         <>
@@ -116,15 +144,15 @@ function CategoryCreatePage(){
                 <div className="flex justify-between items-center px-10 py-6 border-b border-gray-200">
 
                     <h2 className="text-3xl font-semibold text-gray-900">
-                        Create category
+                        {categoryToEdit ? "Edit category" : "Create category"}
                     </h2>
 
                     <button
-                        onClick={() => navigate("/admin/category/mgt", {
-                            state: { showCreateCategoryToast: true }
-                        })}
-                        className="bg-[#2E2824] hover:bg-black text-white text-sm px-8 py-3 rounded-full transition">
-                        Save
+                        type="button"
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className="bg-[#2E2824] hover:bg-black disabled:cursor-not-allowed disabled:opacity-60 text-white text-sm px-8 py-3 rounded-full transition">
+                        {isSaving ? "Saving..." : "Save"}
                     </button>
 
                 </div>
@@ -140,6 +168,8 @@ function CategoryCreatePage(){
 
                         <input
                             type="text"
+                            value={categoryName}
+                            onChange={(event) => setCategoryName(event.target.value)}
                             placeholder="Category name"
                             className="w-full h-11 px-4 rounded-md border border-gray-300 bg-white
                                 focus:outline-none focus:ring-2 focus:ring-gray-400
