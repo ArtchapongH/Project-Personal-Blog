@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 import notebookLightIcon from "../icons/notebook_light.png";
 import fileLightIcon from "../icons/File_light.png";
@@ -17,36 +18,122 @@ import imageBoxIcon from "../icons/Img_box_light.png";
 
 import { useAuth } from "../contexts/authenticaition.jsx";
 
+const API_BASE_URL = import.meta.env.DEV
+    ? "/api"
+    : import.meta.env.VITE_API_BASE_URL || "";
+
 function ArticleCreatePage(){
-    const categories = ["Highlight", "Cat", "Inspiration", "General"];
+    const [categories, setCategories] = useState([]);
     
     const [imageUrl, setImageUrl] = useState("");
     const [category, setCategory] = useState("");
-    const [author, setAuthor] = useState("");
+    const [author, setAuthor] = useState("Thompson P.");
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [content, setContent] = useState("");
+
+    const [selectedImageFile, setSelectedImageFile] = useState(null);
+    const [previewImageUrl, setPreviewImageUrl] = useState("");
+    const [isSaving, setIsSaving] = useState(false);
+    const fileInputRef = useRef(null);
 
     const navigate = useNavigate();
 
     const {logout} = useAuth();
 
-    async function handleSubmit(e) {
-        e.preventDefault();
-        const newPost = {
-            imageUrl: imageUrl,
-            category: category,
-            author:author,
-            title:title,
-            description: description,
-            content: content
+    async function getCategories() {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/categories`);
+            setCategories(response.data.categories ?? []);
+        } catch (error) {
+            console.error("Failed to fetch categories:", error);
+            setCategories([]);
+        }
+    }
+
+    useEffect(() => {
+        getCategories();
+    }, []);
+
+    useEffect(() => {
+        if (!selectedImageFile) {
+            return;
+        }
+
+        const objectUrl = URL.createObjectURL(selectedImageFile);
+        setPreviewImageUrl(objectUrl);
+
+        return () => {
+            URL.revokeObjectURL(objectUrl);
         };
-        await axios.post(`https://blog-post-project-api.vercel.app/post`, newPost);
-        navigate("/");
+    }, [selectedImageFile]);
+
+    const handleOpenFilePicker = () => {
+        fileInputRef.current?.click();
     };
+
+    const handleImageSelect = (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setSelectedImageFile(file);
+    };
+
+    async function handleSavePost(statusId) {
+        const isDraft = statusId === 1;
+
+        try {
+            setIsSaving(true);
+
+            const matchedCategory = categories.find((cat) => cat.name === category);
+            if (!matchedCategory?.id) {
+                throw new Error("Please select a category");
+            }
+
+            const formData = new FormData();
+            formData.append("title", title);
+            formData.append("description", description);
+            formData.append("content", content);
+            formData.append("category_id", String(matchedCategory.id));
+            formData.append("status_id", String(statusId));
+
+            if (selectedImageFile) {
+                formData.append("imageFile", selectedImageFile);
+            } else if (imageUrl) {
+                formData.append("image", imageUrl);
+            }
+
+            await axios.post(`${API_BASE_URL}/posts`, formData, {
+                headers: {
+                    "X-Skip-Auth-Redirect": "true",
+                },
+            });
+
+            toast.success(isDraft ? "Saved as draft" : "Published article", {
+                description: isDraft
+                    ? "Your article has been saved as a draft"
+                    : "Your article has been published",
+            });
+            navigate("/admin/article/mgt");
+        } catch (error) {
+            toast.error(isDraft ? "Failed to save draft" : "Failed to publish article", {
+                description: error.response?.data?.message || error.message || "Please try again",
+            });
+        } finally {
+            setIsSaving(false);
+        }
+    }
 
     return(
         <>
+
+<input
+    ref={fileInputRef}
+    type="file"
+    accept="image/*"
+    className="hidden"
+    onChange={handleImageSelect}
+/>
 
 <div className="bg-[#FAF8F5]">
 
@@ -141,7 +228,7 @@ function ArticleCreatePage(){
 
         {/* Header */}
         {/* เราใส่ขอบเขตของ form ถูกหรือยัง */}
-        <form className="product-form" onSubmit={handleSubmit}>
+        <form className="product-form" onSubmit={(e) => e.preventDefault()}>
         <div className="h-20 bg-white border-b px-10 flex items-center justify-between">
 
             <h2 className="text-2xl font-semibold text-gray-800">
@@ -149,17 +236,20 @@ function ArticleCreatePage(){
             </h2>
 
             <div className="flex gap-4">
-                {/* ทำยังไงให้ปุ่มมันเก็บค่า draft หรือ publish? */}
                 <button
-                    type="submit"
-                    className="px-6 py-2 rounded-full border border-gray-300 text-sm hover:bg-gray-50">
-                    Save as draft
+                    type="button"
+                    onClick={() => handleSavePost(1)}
+                    disabled={isSaving}
+                    className="px-6 py-2 rounded-full border border-gray-300 text-sm hover:bg-gray-50 disabled:opacity-50">
+                    {isSaving ? "Saving..." : "Save as draft"}
                 </button>
 
                 <button
-                    type="submit"
-                    className="px-6 py-2 rounded-full bg-[#26221F] text-white text-sm hover:bg-black">
-                    Save and publish
+                    type="button"
+                    onClick={() => handleSavePost(2)}
+                    disabled={isSaving}
+                    className="px-6 py-2 rounded-full bg-[#26221F] text-white text-sm hover:bg-black disabled:opacity-50">
+                    {isSaving ? "Saving..." : "Save and publish"}
                 </button>
 
             </div>
@@ -178,16 +268,18 @@ function ArticleCreatePage(){
             <div className="flex items-center gap-6 mb-6">
 
                 <div
-                    className="w-52 h-36 bg-[#FBFBFA] border rounded flex items-center justify-center">
-                        {/* ทำยังไงให้อัพโหลดรูปได้? */}
-                    <img src={imageBoxIcon} alt="Profile icon" className="w-4 h-4 object-contain" />
-                    <i data-lucide="image"
-                       className="w-7 h-7 text-gray-400">
-                       </i>
+                    className="w-52 h-36 bg-[#FBFBFA] border rounded overflow-hidden flex items-center justify-center">
+                    {previewImageUrl ? (
+                        <img className="block w-full h-full object-cover" src={previewImageUrl} alt={title} />
+                    ) : (
+                        <img src={imageBoxIcon} alt="Profile icon" className="w-4 h-4 object-contain" />
+                    )}
 
                 </div>
-                       {/* ต้องทำ onClick */} 
+
                 <button
+                    type="button"
+                    onClick={handleOpenFilePicker}
                     className="px-6 py-2 border rounded-full text-sm hover:bg-gray-50">
                     Upload thumbnail image
                 </button>
@@ -201,30 +293,19 @@ function ArticleCreatePage(){
                     Category
                 </label>
 
-                {/* dynamic buttons with array.map [but how to adjust bg color of only first button]*/}
-                {
-                categories.map((cat) => {
-                    return (
-                    <button
-                        disabled={category === cat}
-                        key={cat}
-                        onClick={() => setCategory(cat)}
-                        className={`px-4 py-2 transition-colors rounded-sm text-sm font-medium ${category === cat ? 'bg-[#DAD6D1]' : 'hover:bg-muted'}`}
-                    >
-                        {cat}
-                    </button>
-                    )
-                })
-                }
-                {/*
                 <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
                     className="w-full border rounded px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-200">
-                    <option>Select category</option>
-                    <option>Cat</option>
-                    <option>General</option>
-                    <option>Inspiration</option>
+                    <option value="" disabled>
+                        Select category
+                    </option>
+                    {categories.map((cat) => (
+                        <option key={cat.id} value={cat.name}>
+                            {cat.name}
+                        </option>
+                    ))}
                 </select>
-                */}
 
             </div>
 
@@ -265,11 +346,13 @@ function ArticleCreatePage(){
                     Introduction (max 120 letters)
                 </label>
 
-                <input
+                <textarea
+                    rows={5}
+                    maxLength={120}
                     value={description}
                     onChange={(e) => { setDescription(e.target.value) }}
                     placeholder="Introduction"
-                    className="w-full border rounded px-3 py-2 text-sm resize-none outline-none focus:ring-2 focus:ring-orange-200"/>
+                    className="w-full min-h-30 border rounded px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-200"/>
 
             </div>
 
@@ -280,11 +363,12 @@ function ArticleCreatePage(){
                     Content
                 </label>
 
-                <input
+                <textarea
+                    rows={14}
                     value={content}
                     onChange={(e) => { setContent(e.target.value) }}
                     placeholder="Content"
-                    className="w-full border rounded px-3 py-2 text-sm outline-none resize-none focus:ring-2 focus:ring-orange-200"/>
+                    className="w-full min-h-80 border rounded px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-200"/>
 
             </div>
 

@@ -16,10 +16,13 @@ import searchLightIcon from "../icons/Search_light.png";
 
 import { useAuth } from "../contexts/authenticaition.jsx";
 
+const API_BASE_URL = import.meta.env.DEV
+    ? "/api"
+    : import.meta.env.VITE_API_BASE_URL || "";
 
 function ArticleEditPage(){
-    const categories = ["Highlight", "Cat", "Inspiration", "General"];
-    
+    const [categories, setCategories] = useState([]);
+
     const [imageUrl, setImageUrl] = useState("");
     const [category, setCategory] = useState("");
     const [author, setAuthor] = useState("");
@@ -32,10 +35,20 @@ function ArticleEditPage(){
 
     const {logout} = useAuth();
 
+    async function getCategories() {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/categories`);
+            setCategories(response.data.categories ?? []);
+        } catch (error) {
+            console.error("Failed to fetch categories:", error);
+            setCategories([]);
+        }
+    }
+
     async function getPostById() {
-                const response = await axios.get(`https://blog-post-project-api.vercel.app/posts/${postId}`);
+                const response = await axios.get(`${API_BASE_URL}/posts/${postId}`);
                 // รองรับทั้งรูปแบบ response.data.post และ response.data.posts
-                const post = response.data.post ?? response.data.posts ?? response.data;
+                const post = response.data.post ?? response.data.posts ?? response.data.data ?? response.data;
 
                 setImageUrl(post?.imageUrl ?? post?.image ?? "");
                 setCategory(post?.category ?? "");
@@ -46,23 +59,41 @@ function ArticleEditPage(){
     };    
 
   useEffect(() => {
+    getCategories();
     getPostById()
     }, [postId]);
 
   async function handleSubmit(e) {
     e.preventDefault();
+    const matchedCategory = categories.find((cat) => cat.name === category);
+
     const updatedPost = {
-        imageUrl: imageUrl,
-        category: category,
-        author:author,
-        title:title,
-        description: description,
-        content: content
-      
+        title,
+        image: imageUrl,
+        category_id: matchedCategory?.id,
+        description,
+        content,
+        status_id: 2,
+    };
+
+    await axios.put(`${API_BASE_URL}/posts/${postId}`, updatedPost);
+    await getPostById();
     }
-    //คล้าย Create Product แต่เปลี่ยนจาก post เป็น put และใส่ param.id เข้าไป
-    await axios.put(`https://blog-post-project-api.vercel.app/post/${postId}`, updatedPost);
-    navigate("/");
+
+    async function handleSaveDraft() {
+        const matchedCategory = categories.find((cat) => cat.name === category);
+
+        const draftPost = {
+            title,
+            image: imageUrl,
+            category_id: matchedCategory?.id,
+            description,
+            content,
+            status_id: 2,
+        };
+
+        await axios.put(`${API_BASE_URL}/posts/${postId}`, draftPost);
+        await getPostById();
     }
     
     return(
@@ -170,13 +201,16 @@ function ArticleEditPage(){
             <div className="flex gap-4">
 
                 <button
+                    type="button"
+                    onClick={handleSaveDraft}
                     className="px-6 py-2 rounded-full border border-gray-300 text-sm hover:bg-gray-50">
                     Save as draft
                 </button>
 
                 <button
+                    type="submit"
                     className="px-6 py-2 rounded-full bg-[#26221F] text-white text-sm hover:bg-black">
-                    Save and publish
+                    Save
                 </button>
 
             </div>
@@ -226,8 +260,8 @@ function ArticleEditPage(){
                         Select category
                     </option>
                     {categories.map((cat) => (
-                        <option key={cat} value={cat}>
-                            {cat}
+                        <option key={cat.id} value={cat.name}>
+                            {cat.name}
                         </option>
                     ))}
                 </select>
@@ -271,8 +305,8 @@ function ArticleEditPage(){
                     Introduction (max 120 letters)
                 </label>
 
-                <input
-                    
+                <textarea
+                    rows={4}
                     value={description}
                     onChange={(e) => { setDescription(e.target.value) }}
                     placeholder="Introduction"
@@ -287,7 +321,8 @@ function ArticleEditPage(){
                     Content
                 </label>
 
-                <input
+                <textarea
+                    rows={12}
                     value={content}
                     onChange={(e) => { setContent(e.target.value) }}
                     placeholder="Content"

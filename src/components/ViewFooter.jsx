@@ -1,21 +1,62 @@
-import { Copy, Smile, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { Copy, Smile } from "lucide-react";
+import { useParams } from "react-router-dom";
 import { toast } from "sonner";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import facebookBlackIcon from "../icons/Facebook_black.png";
 import linkedInBlackIcon from "../icons/LinkedIN_black.png";
 import twitterBlackIcon from "../icons/Twitter_black.png";
 
 
 function ViewFooter() {
+    const { postId } = useParams();
+    const [likesCount, setLikesCount] = useState(0);
+    const [loadedPostId, setLoadedPostId] = useState(null);
+    const [isLiking, setIsLiking] = useState(false);
+    const API_BASE_URL = import.meta.env.DEV
+        ? "/api"
+        : import.meta.env.VITE_API_BASE_URL || "";
+
+    useEffect(() => {
+        if (!postId) return undefined;
+
+        let isMounted = true;
+        axios.get(`${API_BASE_URL}/posts/${postId}/likes`)
+            .then((response) => {
+                if (isMounted) {
+                    setLikesCount(Number(response.data.likes_count) || 0);
+                }
+            })
+            .catch(() => {
+                if (isMounted) {
+                    toast.error("Could not load likes for this post.");
+                }
+            })
+            .finally(() => {
+                if (isMounted) {
+                    setLoadedPostId(postId);
+                }
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, [API_BASE_URL, postId]);
+
+    const handleLike = async () => {
+        if (!postId || isLiking) return;
+
+        setIsLiking(true);
+        try {
+            const response = await axios.post(`${API_BASE_URL}/posts/${postId}/likes`);
+            setLikesCount(Number(response.data.likes_count) || 0);
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Could not like this post.");
+        } finally {
+            setIsLiking(false);
+        }
+    };
+
     const handleCopyLink = async () => {
         try {
             // Get the current page URL
@@ -33,7 +74,7 @@ function ViewFooter() {
                     color: "#FFFFFF",
                 },
             });
-        } catch (err) {
+        } catch {
             // Show error toast if copy fails
             toast.error("Failed to copy", {
                 description: "Could not copy the link. Please try again.",
@@ -56,39 +97,15 @@ function ViewFooter() {
         <section className="bg-white px-3 py-0 sm:px-6 sm:py-8">
             <div className="bg-[#C5DDFC] px-3 py-4 sm:rounded-xl sm:px-4 sm:py-3">
                 <div className="flex flex-col gap-7 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <button
-                                type="button"
-                                className="relative flex h-14 w-full items-center justify-center gap-3 rounded-full border border-gray-700 bg-white px-6 text-lg font-semibold text-gray-900 sm:h-10 sm:w-auto sm:min-w-28 sm:gap-2 sm:text-sm"
-                            >
-                                <Smile className="h-6 w-6 sm:h-4 sm:w-4" strokeWidth={2.2} />
-                                321
-                            </button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent className="max-w-md">
-                            <AlertDialogCancel className="absolute right-4 top-4 h-8 w-8 rounded-sm border-0 bg-transparent p-0 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-0 disabled:pointer-events-none">
-                                <X className="h-4 w-4" />
-                                <span className="sr-only">Close</span>
-                            </AlertDialogCancel>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle className="text-center text-2xl font-bold">
-                                    Create an account to continue
-                                </AlertDialogTitle>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter className="flex-col gap-3 sm:flex-col">
-                                <AlertDialogAction className="w-full rounded-full bg-black py-6 text-base font-semibold hover:bg-gray-800">
-                                    Create account
-                                </AlertDialogAction>
-                                <div className="text-center text-sm text-gray-600">
-                                    Already have an account?{' '}
-                                    <a href="#" className="font-semibold text-black underline hover:text-gray-700">
-                                        Log in
-                                    </a>
-                                </div>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                    <button
+                        type="button"
+                        onClick={handleLike}
+                        disabled={!postId || loadedPostId !== postId || isLiking}
+                        className="relative flex h-14 w-full items-center justify-center gap-3 rounded-full border border-gray-700 bg-white px-6 text-lg font-semibold text-gray-900 disabled:cursor-not-allowed disabled:opacity-60 sm:h-10 sm:w-auto sm:min-w-28 sm:gap-2 sm:text-sm"
+                    >
+                        <Smile className="h-6 w-6 sm:h-4 sm:w-4" strokeWidth={2.2} />
+                        {likesCount}
+                    </button>
 
                     <div className="flex items-center gap-2 sm:gap-2">
                         <button

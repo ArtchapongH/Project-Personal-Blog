@@ -15,6 +15,10 @@ import searchLightIcon from "../icons/Search_light.png";
 import SearchResultBox from "../components/SearchResultBox";
 import { useAuth } from "../contexts/authenticaition.jsx";
 
+const API_BASE_URL = import.meta.env.DEV
+    ? "/api"
+    : import.meta.env.VITE_API_BASE_URL || "";
+
 function ArticleManagementPage(){
 
     const navigate = useNavigate();
@@ -23,21 +27,22 @@ function ArticleManagementPage(){
     const [isLoading, setIsLoading] = useState(true);
 
     const [selectedCategory, setSelectedCategory] = useState("");
+    const [selectedStatus, setSelectedStatus] = useState("");
     const [search, setSearch] = useState("");
     const [suggestion, setSuggestion] = useState([]);
 
     const {logout} = useAuth();
 
-    const filteredPosts = selectedCategory
-        ? posts.filter((post) => post.category === selectedCategory)
-        : posts;
+    const filteredPosts = posts
+        .filter((post) => !selectedCategory || post.category === selectedCategory)
+        .filter((post) => !selectedStatus || post.status === selectedStatus);
 
     useEffect(() => {
         let isMounted = true;
 
         const getPosts = async () => {
             try {
-                const response = await axios.get("https://blog-post-project-api.vercel.app/posts");
+                const response = await axios.get(`${API_BASE_URL}/posts`);
                 if (isMounted) {
                     setPosts(response.data.posts ?? []);
                 }
@@ -63,7 +68,7 @@ function ArticleManagementPage(){
     useEffect(() => {
         const fetchSuggestions = async () => {
             try {
-                const response = await axios.get(`https://blog-post-project-api.vercel.app/posts?keyword=${search}`);
+                const response = await axios.get(`${API_BASE_URL}/posts?keyword=${search}`);
                 setSuggestion(response.data.posts ?? []);
             } catch (error) {
                 console.error("Error fetching search results:", error);
@@ -227,12 +232,13 @@ function ArticleManagementPage(){
 
                 {/* Right Filters */}
                 <div className="flex gap-4">
-                    {/* ตรงนี้อาจจะต้องแก้เป็น button เพื่อให้มันเก็บค่าได้หรือเปล่า*/}
                     <select
+                        value={selectedStatus}
+                        onChange={(e) => setSelectedStatus(e.target.value)}
                         className="w-40 border rounded-lg px-4 py-3 bg-white text-sm text-gray-600">
-                        <option>Status</option>
-                        <option>Published</option>
-                        <option>Draft</option>
+                        <option value="">Status</option>
+                        <option value="publish">Published</option>
+                        <option value="draft">Draft</option>
                     </select>
 
                     <select
@@ -308,8 +314,14 @@ function ArticleManagementPage(){
                                         </td>
 
                                         <td className="px-4">
-                                            <span className="text-[#8BBBF9] font-medium">
-                                                • Published
+                                            <span
+                                                className={
+                                                    post.status === "Published"
+                                                        ? "text-[#8BBBF9] font-medium"
+                                                        : "text-gray-400 font-medium"
+                                                }
+                                            >
+                                                • {post.status}
                                             </span>
                                         </td>
 
