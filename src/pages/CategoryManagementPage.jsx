@@ -19,6 +19,11 @@ function CategoryManagementPage(){
     const navigate = useNavigate();
     const location = useLocation();
     const [categories, setCategories] = useState([]);
+    const [searchQuery, setSearchQuery] = useState("");
+
+    const filteredCategories = categories.filter((category) =>
+        category.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     const {logout} = useAuth();
 
@@ -214,6 +219,8 @@ function CategoryManagementPage(){
                     <input
                         type="text"
                         placeholder="Search..."
+                        value={searchQuery}
+                        onChange={(event) => setSearchQuery(event.target.value)}
                         className="w-full md:w-72 border rounded-md px-4 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-gray-300"/>
 
                     {/* Table */}
@@ -225,11 +232,11 @@ function CategoryManagementPage(){
                             <div></div>
                         </div>
 
-                        {categories.map((category, index) => (
+                        {filteredCategories.map((category, index) => (
                             <div
                                 key={category.id}
                                 className={`grid grid-cols-[1fr_90px] items-center px-5 py-4 ${
-                                    index < categories.length - 1 ? "border-b" : ""
+                                    index < filteredCategories.length - 1 ? "border-b" : ""
                                 } hover:bg-gray-50`}
                             >
                                 <div>{category.name}</div>

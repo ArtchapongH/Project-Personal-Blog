@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 
 import notebookLightIcon from "../icons/notebook_light.png";
@@ -7,16 +9,90 @@ import bellLightIcon from "../icons/Bell_light.png";
 import refreshLightIcon from "../icons/Refresh_light.png";
 import outLightIcon from "../icons/Out_light.png";
 import signOutSquareLightIcon from "../icons/Sign_out_squre_light.png";
-import editLightIcon from "../icons/Edit_light.png";
-import trashLightIcon from "../icons/Trash_light.png";
-import addRoundLightIcon from "../icons/Add_round_light.png";
-import searchLightIcon from "../icons/Search_light.png";
 
 import { useAuth } from "../contexts/authenticaition.jsx";
 
-function NotificationPage(){
+const API_BASE_URL = import.meta.env.DEV
+    ? "/api"
+    : import.meta.env.VITE_API_BASE_URL || "";
+
+function formatTimeAgo(value, currentTimestamp) {
+    const eventTimestamp = new Date(value).getTime();
+    if (Number.isNaN(eventTimestamp)) return "";
+
+    const elapsedSeconds = Math.max(0, Math.floor((currentTimestamp - eventTimestamp) / 1000));
+    const units = [
+        [31536000, "year"],
+        [2592000, "month"],
+        [86400, "day"],
+        [3600, "hour"],
+        [60, "minute"],
+        [1, "second"],
+    ];
+    const [unitLength, unitName] = units.find(([length]) => elapsedSeconds >= length) ?? units[units.length - 1];
+    const amount = Math.floor(elapsedSeconds / unitLength);
+
+    return `${amount} ${unitName}${amount === 1 ? "" : "s"} ago`;
+}
+
+function getInitials(name = "") {
+    return name
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((part) => part[0])
+        .join("")
+        .toUpperCase();
+}
+
+function NotificationPage() {
     const navigate = useNavigate();
-    const {logout} = useAuth();
+    const { logout } = useAuth();
+    const [notifications, setNotifications] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState("");
+    const [currentTimestamp, setCurrentTimestamp] = useState(0);
+
+    useEffect(() => {
+        let isMounted = true;
+        const fetchedAtTimestamp = Date.now();
+
+        Promise.all([
+            axios.get(`${API_BASE_URL}/comments`),
+            axios.get(`${API_BASE_URL}/likes`),
+        ])
+            .then(([commentsResponse, likesResponse]) => {
+                if (!isMounted) return;
+
+                const comments = (commentsResponse.data.comments ?? []).map((comment) => ({
+                    ...comment,
+                    type: "comment",
+                    timestamp: comment.created_at,
+                }));
+                const likes = (likesResponse.data.likes ?? []).map((like) => ({
+                    ...like,
+                    type: "like",
+                    timestamp: like.liked_at,
+                }));
+
+                setNotifications([...comments, ...likes].sort(
+                    (first, second) => new Date(second.timestamp) - new Date(first.timestamp)
+                ));
+                setCurrentTimestamp(fetchedAtTimestamp);
+                setIsLoading(false);
+            })
+            .catch(() => {
+                if (isMounted) {
+                    setLoadError("Could not load notifications.");
+                    setIsLoading(false);
+                }
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
     return(
         <>
 
@@ -120,89 +196,50 @@ function NotificationPage(){
 
                 {/* Notifications */}
                 <div className="px-8">
-
-                    {/* Notification Item */}
-                    <div className="flex justify-between items-start py-6 border-b border-gray-200">
-
-                        <div className="flex gap-4">
-
-                            <img
-                                src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&q=80"
-                                className="w-10 h-10 rounded-full object-cover"
-                                alt="Avatar"/>
-
-                            <div>
-
-                                <p className="text-sm text-gray-700 leading-relaxed">
-
-                                    <span className="font-semibold">
-                                        Jacob Lash
-                                    </span>
-
-                                    Commented on your article:
-                                    <span className="text-gray-600">
-                                        The Fascinating World of Cats: Why We Love Our Furry Friends
-                                    </span>
-
-                                </p>
-
-                                <p className="text-sm text-gray-600 mt-1 italic">
-                                    "I loved this article! It really explains why my cat is so independent yet loving. The purring section was super interesting."
-                                </p>
-
-                                <p className="text-xs text-[#8BBBF9] mt-2">
-                                    4 hours ago
-                                </p>
-
+                    {isLoading && <p className="py-6 text-sm text-gray-500">Loading notifications...</p>}
+                    {loadError && <p className="py-6 text-sm text-red-600">{loadError}</p>}
+                    {!isLoading && !loadError && notifications.length === 0 && (
+                        <p className="py-6 text-sm text-gray-500">No notifications yet.</p>
+                    )}
+                    {notifications.map((notification) => (
+                        <div key={`${notification.type}-${notification.post_id}-${notification.timestamp}-${notification.name}`} className="flex items-start justify-between gap-5 border-b border-gray-200 py-6">
+                            <div className="flex min-w-0 gap-4">
+                                <div
+                                    aria-label={`${notification.name} avatar`}
+                                    className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-[#d9e7f7] text-xs font-semibold text-[#345779]"
+                                >
+                                    {notification.profile_pic ? (
+                                        <img
+                                            src={notification.profile_pic}
+                                            alt={`${notification.name} avatar`}
+                                            className="h-10 w-10 rounded-full object-cover"
+                                        />
+                                    ) : getInitials(notification.name)}
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-sm leading-relaxed text-gray-700">
+                                        <span className="font-semibold">{notification.name}</span>
+                                        {notification.type === "comment"
+                                            ? " commented on your article: "
+                                            : " liked your article: "}
+                                        <span className="text-gray-600">{notification.title}</span>
+                                    </p>
+                                    {notification.type === "comment" && (
+                                        <p className="mt-1 text-sm italic text-gray-600">&quot;{notification.comment_text}&quot;</p>
+                                    )}
+                                    <p className="mt-2 text-xs text-[#8BBBF9]">
+                                        {formatTimeAgo(notification.timestamp, currentTimestamp)}
+                                    </p>
+                                </div>
                             </div>
-
+                            <Link
+                                to={`/post/${notification.post_id}`}
+                                className="flex-none text-sm font-semibold text-gray-700 hover:text-black"
+                            >
+                                View
+                            </Link>
                         </div>
-
-                        <button className="text-sm font-semibold text-gray-700 hover:text-black">
-                            View
-                        </button>
-
-                    </div>
-
-                    {/* Notification Item */}
-                    <div className="flex justify-between items-start py-6 border-b border-gray-200">
-
-                        <div className="flex gap-4">
-
-                            <img
-                                src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&q=80"
-                                className="w-10 h-10 rounded-full object-cover"
-                                alt="Avatar"/>
-
-                            <div>
-
-                                <p className="text-sm text-gray-700">
-
-                                    <span className="font-semibold">
-                                        Jacob Lash
-                                    </span>
-
-                                    liked your article:
-                                    <span className="text-gray-600">
-                                        The Fascinating World of Cats: Why We Love Our Furry Friends
-                                    </span>
-
-                                </p>
-
-                                <p className="text-xs text-[#8BBBF9] mt-2">
-                                    4 hours ago
-                                </p>
-
-                            </div>
-
-                        </div>
-
-                        <button className="text-sm font-semibold text-gray-700 hover:text-black">
-                            View
-                        </button>
-
-                    </div>
-
+                    ))}
                 </div>
 
             </main>
