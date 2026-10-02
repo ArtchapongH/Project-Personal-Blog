@@ -1,18 +1,65 @@
 import hamburgerIcon from '../icons/hamburger_icon.png'
-import { useState } from 'react'
+import axios from 'axios';
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import MemberPopUpMenu from './MemberPopUpMenu';
 import MemberPopUpNotification from './MemberPopUpNotification';
 import MemberPopUpMenuDesktop from './MemberPopUpMenuDesktop';
+import { useAuth } from '../contexts/authenticaition.jsx';
 
 import bellLightIcon from "../icons/Bell_light.png"
+
+const API_BASE_URL = import.meta.env.DEV
+  ? "/api"
+  : import.meta.env.VITE_API_BASE_URL || "";
 
 function NavBarLogIn() {
 
   const navigate = useNavigate();
+  const { state } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [profile, setProfile] = useState(null);
+
+  const userId = state?.user?.id ?? state?.user?.userId ?? state?.user?._id ?? state?.user?.sub ?? (() => {
+    try {
+      const token = localStorage.getItem("token");
+      const payload = token?.split(".")[1];
+      if (!payload) return "";
+
+      const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+      const decoded = JSON.parse(atob(normalized));
+      return decoded?.id ?? decoded?.userId ?? decoded?._id ?? decoded?.sub ?? "";
+    } catch {
+      return "";
+    }
+  })();
+
+  useEffect(() => {
+    if (!userId) {
+      setProfile(null);
+      return undefined;
+    }
+
+    let isMounted = true;
+    axios.get(`${API_BASE_URL}/profiles/${userId}`)
+      .then((response) => {
+        if (isMounted) {
+          setProfile(response?.data?.data ?? response?.data ?? null);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setProfile(null);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [userId]);
+
+  const displayName = profile?.name || state?.user?.name || state?.user?.username || "User";
+  const profilePicture = profile?.profile_pic ?? profile?.profile_picture ?? profile?.profileImage ?? null;
 
   function handleProfileClick(){
     navigate("/admin/profile");
@@ -80,12 +127,18 @@ function NavBarLogIn() {
             onClick={() => setIsDesktopMenuOpen(!isDesktopMenuOpen)}
             className="flex items-center gap-2 hover:bg-gray-100 px-3 py-2 rounded-lg transition"
           >
-            <img 
-              src="https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=150&auto=format&fit=crop&q=60" 
-              alt="User profile" 
-              className="w-8 h-8 rounded-full object-cover"
-            />
-            <span className="text-sm font-medium text-gray-700">Moodeng ja</span>
+            <span className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-sm font-semibold text-gray-700" aria-hidden="true">
+              {displayName.slice(0, 1).toUpperCase()}
+              {profilePicture && (
+                <img
+                  src={profilePicture}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover"
+                  onError={(event) => event.currentTarget.remove()}
+                />
+              )}
+            </span>
+            <span className="text-sm font-medium text-gray-700">{displayName}</span>
             {/* Dropdown arrow */}
             <svg 
               className={`w-4 h-4 text-gray-500 transition-transform ${isDesktopMenuOpen ? 'rotate-180' : ''}`}

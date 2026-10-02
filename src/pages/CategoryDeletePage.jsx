@@ -4,6 +4,10 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+const API_BASE_URL = import.meta.env.DEV
+	? "/api"
+	: import.meta.env.VITE_API_BASE_URL || "";
+
 export default function CategoryDeletePage() {
 	const navigate = useNavigate();
 	const location = useLocation();
@@ -22,7 +26,7 @@ export default function CategoryDeletePage() {
 
 		setIsDeleting(true);
 		try {
-			await axios.delete(`/api/categories/${category.id}`);
+			await axios.delete(`${API_BASE_URL}/categories/${category.id}`);
 			navigate("/admin/category/mgt");
 		} catch (error) {
 			toast.error(error.response?.data?.message || "Unable to delete category.");

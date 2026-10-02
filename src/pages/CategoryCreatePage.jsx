@@ -12,6 +12,9 @@ import { toast } from "sonner";
 
 import { useAuth } from "../contexts/authenticaition.jsx";
 
+const API_BASE_URL = import.meta.env.DEV
+    ? "/api"
+    : import.meta.env.VITE_API_BASE_URL || "";
 
 function CategoryCreatePage(){
     const navigate = useNavigate();
@@ -33,9 +36,9 @@ function CategoryCreatePage(){
         setIsSaving(true);
         try {
             if (categoryToEdit) {
-                await axios.patch(`/api/categories/${categoryToEdit.id}`, { name });
+                await axios.patch(`${API_BASE_URL}/categories/${categoryToEdit.id}`, { name });
             } else {
-                await axios.post("/api/categories", { name });
+                await axios.post(`${API_BASE_URL}/categories`, { name });
             }
             navigate("/admin/category/mgt", {
                 state: { showCreateCategoryToast: !categoryToEdit },

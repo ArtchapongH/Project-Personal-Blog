@@ -15,6 +15,10 @@ import trashLightIcon from "../icons/Trash_light.png";
 
 import { useAuth } from "../contexts/authenticaition.jsx";
 
+const API_BASE_URL = import.meta.env.DEV
+    ? "/api"
+    : import.meta.env.VITE_API_BASE_URL || "";
+
 function CategoryManagementPage(){
     const navigate = useNavigate();
     const location = useLocation();
@@ -32,7 +36,7 @@ function CategoryManagementPage(){
 
         async function getCategories() {
             try {
-                const response = await axios.get("/api/categories");
+                const response = await axios.get(`${API_BASE_URL}/categories`);
                 if (isMounted) {
                     setCategories(response.data.categories ?? []);
                 }

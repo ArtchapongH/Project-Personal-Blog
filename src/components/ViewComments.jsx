@@ -155,8 +155,16 @@ function ViewComments() {
 
                             return (
                                 <article key={comment.id} className="flex gap-3 border-b border-gray-200 py-5 last:border-b-0">
-                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold text-gray-700" aria-hidden="true">
+                                    <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-sm font-semibold text-gray-700" aria-hidden="true">
                                         {initials}
+                                        {comment.profile_pic && (
+                                            <img
+                                                src={comment.profile_pic}
+                                                alt=""
+                                                className="absolute inset-0 h-full w-full object-cover"
+                                                onError={(event) => event.currentTarget.remove()}
+                                            />
+                                        )}
                                     </div>
                                     <div className="min-w-0">
                                         <div className="text-sm font-semibold">{author}</div>
