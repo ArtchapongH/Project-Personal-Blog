@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -41,6 +41,28 @@ function AuthProvider(props) {
     error: null,
     user: null,
   });
+
+  const [notifications, setNotifications] = useState([]);
+
+  const fetchNotifications = useCallback(async () => {
+    if (!localStorage.getItem("token")) {
+      setNotifications([]);
+      return;
+    }
+    try {
+      const result = await axios.get(`${API_BASE_URL}/comments/commenters`, {
+        headers: { "X-Skip-Auth-Redirect": "true" },
+      });
+      setNotifications(result?.data?.commenters ?? []);
+    } catch {
+      setNotifications([]);
+    }
+  }, []);
+
+  // load on app start (token already stored) and after login/logout
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications, state.user]);
 
   const login = async (data) => {
     try {
@@ -112,7 +134,7 @@ function AuthProvider(props) {
 
   return (
     <AuthContext.Provider
-      value={{ state, login, logout, register, isAuthenticated }}
+      value={{ state, login, logout, register, isAuthenticated, notifications, fetchNotifications }}
     >
       {props.children}
     </AuthContext.Provider>
