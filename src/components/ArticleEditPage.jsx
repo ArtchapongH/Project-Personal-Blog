@@ -76,8 +76,12 @@ function ArticleEditPage(){
         status_id: 2,
     };
 
-    await axios.put(`${API_BASE_URL}/posts/${postId}`, updatedPost);
-    await getPostById();
+    try {
+        await axios.put(`${API_BASE_URL}/posts/${postId}`, updatedPost);
+        navigate("/admin/article/mgt");
+    } catch (error) {
+        alert(error.response?.data?.message || "Failed to publish article");
+    }
     }
 
     async function handleSaveDraft() {
@@ -89,11 +93,15 @@ function ArticleEditPage(){
             category_id: matchedCategory?.id,
             description,
             content,
-            status_id: 2,
+            status_id: 1,
         };
 
-        await axios.put(`${API_BASE_URL}/posts/${postId}`, draftPost);
-        await getPostById();
+        try {
+            await axios.put(`${API_BASE_URL}/posts/${postId}`, draftPost);
+            navigate("/admin/article/mgt");
+        } catch (error) {
+            alert(error.response?.data?.message || "Failed to save draft");
+        }
     }
     
     return(
