@@ -18,7 +18,7 @@ const API_BASE_URL = import.meta.env.DEV
 
 function ArticleSection() {
 
-  const categories = ["Highlight", "Cat", "Inspiration", "General"];
+  const [categories, setCategories] = useState(["Highlight"]);
   const [category, setCategory] = useState("Highlight");
   const [search, setSearch] = useState("");
   const [suggestion, setSuggestion] = useState([]);
@@ -37,6 +37,19 @@ function ArticleSection() {
   }, [category]);
 */
   const endpoint = `${API_BASE_URL}/posts`;
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/categories`);
+        // "Highlight" is the all-posts option, not a DB category
+        setCategories(["Highlight", ...response.data.categories.map((c) => c.name)]);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   useEffect(()=>{
     
