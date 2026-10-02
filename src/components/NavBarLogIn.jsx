@@ -16,7 +16,7 @@ const API_BASE_URL = import.meta.env.DEV
 function NavBarLogIn() {
 
   const navigate = useNavigate();
-  const { state } = useAuth();
+  const { state, notifications } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -103,7 +103,9 @@ function NavBarLogIn() {
             className="relative p-2 hover:bg-gray-100 rounded-full transition border-2 border-gray-300">
              <img src={bellLightIcon} alt="notification icon"  className="w-4 h-4 object-contain" />
             {/* Red notification dot */}
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+            {notifications?.length > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+            )}
           </button>
 
           {/* Notification Popup */}
