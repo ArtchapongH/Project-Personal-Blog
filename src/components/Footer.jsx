@@ -2,6 +2,7 @@
 //import { Linkedin, Share2, Mail } from "lucide-react";
 //import {Heart, Heart, Share2 } from "lucide-react";
 import { Heart, Share2, Globe } from "lucide-react";
+import { Link } from "react-router-dom";
 
 function Footer() {
   return (
@@ -28,9 +29,9 @@ function Footer() {
   </div>
 
   {/* Navigation Link */}
-  <a href="#" className="text-[#2d2a26] text-base font-medium underline underline-offset-4 decoration-1 hover:opacity-80 transition-opacity">
+  <Link to="/" className="text-[#2d2a26] text-base font-medium underline underline-offset-4 decoration-1 hover:opacity-80 transition-opacity">
     Home page
-  </a>
+  </Link>
 </footer>
   )
 };

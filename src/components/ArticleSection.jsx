@@ -1,86 +1,203 @@
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+import { useState, useEffect } from "react";
+import axios from "axios";
+import BlogPosts from "./BlogPosts";
+import SearchResultBox from "./SearchResultBox";
+
+const API_BASE_URL = import.meta.env.DEV
+  ? "/api"
+  : import.meta.env.VITE_API_BASE_URL || "";
+
 function ArticleSection() {
+
+  const categories = ["Highlight", "Cat", "Inspiration", "General"];
+  const [category, setCategory] = useState("Highlight");
+  const [search, setSearch] = useState("");
+  const [suggestion, setSuggestion] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  
+  /*
+  
+    async function getPosts() {
+    const response = await axios.get(`https://blog-post-project-api.vercel.app/posts?category=${category}&limit=2`);
+    console.log(response.data.posts);
+    setPosts(response.data.posts);
+  };
+
+  useEffect(() => {
+    getPosts();
+  }, [category]);
+*/
+  const endpoint = `${API_BASE_URL}/posts`;
+
+  useEffect(()=>{
+    
+      const fetchSuggestions = async () =>{
+        try{
+          const response = await axios.get(`${endpoint}?keyword=${search}`)
+          setSuggestion(response.data.posts);
+        } catch(error) {
+           console.error("Error fetching search results:", error);
+        };
+      };
+      
+      // Debounce the search to avoid too many API calls
+      const timeoutId = setTimeout(() => {
+         fetchSuggestions();
+      }, 300);
+
+    return () => clearTimeout(timeoutId);
+
+  },[search]);
+
   return (
 
-<div className="w-full max-w-5xl mx-auto p-4 sm:p-6 font-sans bg-white">
-  {/* Section Title */}
-  <h2 className="text-2xl font-bold text-neutral-800 mb-4 tracking-tight">
-    Latest articles
-  </h2>
+    <div className="w-full max-w-5xl mx-auto p-4 sm:p-6 font-sans bg-white">
+      {/* Section Title */}
+      <h2 className="text-2xl font-bold text-neutral-800 mb-4 tracking-tight">
+        Latest articles
+      </h2>
 
-  {/* Container Box */}
-  <div className="bg-white border border-neutral-200 p-4 sm:p-2 rounded-xl sm:rounded-2xl shadow-sm sm:shadow-md">
-    
-    {/* MOBILE VIEW: Stacks Search on top, Dropdown below */}
-    <div className="flex flex-col gap-4 sm:hidden">
-      {/* Search Input */}
-      <div className="relative">
-        <input 
-          type="text" 
-          placeholder="Search" 
-          className="w-full px-4 py-3 pr-10 text-[15px] text-neutral-700 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:border-neutral-400 placeholder-neutral-500 shadow-sm"
-        />
-        {/* Search Icon */}
-        <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-          <svg className="w-4 h-4 text-neutral-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-        </div>
-      </div>
+      {/* Container Box */}
+      <div className="bg-white border border-neutral-200 p-4 sm:p-2 rounded-xl sm:rounded-xl">
 
-      {/* Category Selector Dropdown */}
-      <div>
-        <label className="block text-sm font-medium text-neutral-500 mb-1.5 pl-0.5">Category</label>
-        <div className="relative">
-          <select className="w-full appearance-none px-4 py-3 pr-10 text-[15px] font-medium text-neutral-700 bg-white border border-neutral-200 rounded-xl focus:outline-none focus:border-neutral-400 shadow-sm">
-            <option>Highlight</option>
-            <option>Cat</option>
-            <option>Inspiration</option>
-            <option>General</option>
-          </select>
-          <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-            <svg className="w-4 h-4 text-neutral-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path>
-            </svg>
+        {/* MOBILE VIEW: Stacks Search on top, Dropdown below */}
+        <div className="flex flex-col gap-3 sm:hidden">
+          {/* Search Input Box */}
+          <div className="relative">
+            <Input
+              type="text"
+              placeholder="Search"
+              className="w-full"
+              value={search}
+              onChange={(e)=>setSearch(e.target.value)}
+            />
+
+            {/* Search Icon */}
+            <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+              <svg className="w-4 h-4 text-neutral-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </div>
+
+            {/* Search Results Dropdown */}
+            {search && suggestion.length > 0 && (
+              <SearchResultBox
+                suggestion={suggestion}
+              />
+            )}
           </div>
+
+          {/* Category Selector Dropdown */}
+          <Select
+            value={category}
+            onValueChange={(value) => setCategory(value)}
+          >
+            <SelectTrigger className="w-full py-3 rounded-sm text-muted-foreground focus:right-0 focus:ring-offset-0 focus:border-muted-foreground">
+              <SelectValue placeholder="Select category" />
+            </SelectTrigger>
+            <SelectContent>
+              {/* dynamic dropdown list with array.map */}
+              {
+                categories.map((cat) =>
+                  <SelectItem key={cat} value={cat} onClick>{cat}</SelectItem>
+                )
+              }
+
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* DESKTOP VIEW: Inline Row Layout (Hidden on Mobile) */}
+        <div className="hidden sm:flex flex-row items-center justify-between gap-4">
+
+          {/* Category Buttons */}
+
+          <div className="flex items-center gap-1">
+            {/* dynamic buttons with array.map [but how to adjust bg color of only first button]*/}
+            {
+              categories.map((cat) => {
+                return (
+                  <button
+                    disabled={category === cat}
+                    key={cat}
+                    onClick={() => setCategory(cat)}
+                    className={`px-4 py-2 transition-colors rounded-sm text-sm font-medium ${category === cat ? 'bg-[#8BBBF9]' : 'hover:bg-muted'}`}
+                  >
+                    {cat}
+                  </button>
+                )
+              })
+            }
+
+          </div>
+
+          {/* Search Input Box */}
+          <div className="relative">
+            <Input
+              type="text"
+              placeholder="Search"
+              className="flex-1"
+              value={search}
+              onChange={(e)=>setSearch(e.target.value)}
+            />
+            {/* Search Icon */}
+            <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+              <svg className="w-4 h-4 text-neutral-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </div>
+
+            {/* Search Results Dropdown */}
+            {search && suggestion.length > 0 && (
+              <SearchResultBox
+                suggestion={suggestion}
+              />
+            )}
+          </div>
+
         </div>
       </div>
+
+
+
+      {/* Grid Container: Forces 1 column on mobile, scales to 2 columns on medium screens and up */}
+      {/* why picture link work only the first one */}
+      {/*
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12 mt-10">
+        {
+          posts.map((item, index) => {
+            return (
+              <BlogCard
+                key={index}
+                image={item.image}
+                category={item.category}
+                title={item.title}
+                description={item.description}
+                author={item.author}
+                date={item.date}
+              />
+            )
+          })
+        }
+
     </div>
+    
+    */}
 
-    {/* DESKTOP VIEW: Inline Row Layout (Hidden on Mobile) */}
-    <div className="hidden sm:flex flex-row items-center justify-between gap-4">
-      {/* Category Tabs */}
-      <div className="flex items-center gap-1">
-        <button className="px-5 py-2 text-sm font-medium text-neutral-800 bg-neutral-200/80 rounded-xl transition-colors">
-          Highlight
-        </button>
-        <button className="px-5 py-2 text-sm font-medium text-neutral-500 hover:text-neutral-800 rounded-xl transition-colors">
-          Cat
-        </button>
-        <button className="px-5 py-2 text-sm font-medium text-neutral-500 hover:text-neutral-800 rounded-xl transition-colors">
-          Inspiration
-        </button>
-        <button className="px-5 py-2 text-sm font-medium text-neutral-500 hover:text-neutral-800 rounded-xl transition-colors">
-          General
-        </button>
-      </div>
+      <BlogPosts category={category} />
 
-      {/* Search Input Box */}
-      <div className="relative w-72">
-        <input 
-          type="text" 
-          placeholder="Search" 
-          className="w-full px-4 py-2.5 pr-10 text-sm text-neutral-700 bg-white border border-transparent rounded-xl focus:outline-none focus:border-neutral-300 placeholder-neutral-400 shadow-sm"
-        />
-        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-          <svg className="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div> )
+    </div >
+  )
 };
 
 export default ArticleSection;
