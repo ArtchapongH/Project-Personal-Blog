@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 
@@ -29,6 +29,10 @@ function ArticleEditPage(){
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [content, setContent] = useState("");
+    const [selectedImageFile, setSelectedImageFile] = useState(null);
+    const [previewImageUrl, setPreviewImageUrl] = useState("");
+    const [isSaving, setIsSaving] = useState(false);
+    const fileInputRef = useRef(null);
 
     const { postId } = useParams();
     const navigate = useNavigate();
@@ -63,49 +67,67 @@ function ArticleEditPage(){
     getPostById()
     }, [postId]);
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    const matchedCategory = categories.find((cat) => cat.name === category);
+  useEffect(() => {
+    if (!selectedImageFile) return;
+    const objectUrl = URL.createObjectURL(selectedImageFile);
+    setPreviewImageUrl(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [selectedImageFile]);
 
-    const updatedPost = {
-        title,
-        image: imageUrl,
-        category_id: matchedCategory?.id,
-        description,
-        content,
-        status_id: 2,
-    };
+  function handleImageSelect(e) {
+    const file = e.target.files?.[0];
+    if (file) setSelectedImageFile(file);
+  }
+
+  async function savePost(statusId) {
+    const matchedCategory = categories.find((cat) => cat.name === category);
+    if (!matchedCategory?.id) {
+        alert("Please select a category");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("content", content);
+    formData.append("category_id", String(matchedCategory.id));
+    formData.append("status_id", String(statusId));
+    if (selectedImageFile) {
+        formData.append("imageFile", selectedImageFile);
+    } else {
+        formData.append("image", imageUrl);
+    }
 
     try {
-        await axios.put(`${API_BASE_URL}/posts/${postId}`, updatedPost);
+        setIsSaving(true);
+        await axios.put(`${API_BASE_URL}/posts/${postId}`, formData);
         navigate("/admin/article/mgt");
     } catch (error) {
-        alert(error.response?.data?.message || "Failed to publish article");
+        alert(error.response?.data?.message || "Failed to save article");
+    } finally {
+        setIsSaving(false);
     }
-    }
+  }
 
-    async function handleSaveDraft() {
-        const matchedCategory = categories.find((cat) => cat.name === category);
+  function handleSubmit(e) {
+    e.preventDefault();
+    savePost(2);
+  }
 
-        const draftPost = {
-            title,
-            image: imageUrl,
-            category_id: matchedCategory?.id,
-            description,
-            content,
-            status_id: 1,
-        };
-
-        try {
-            await axios.put(`${API_BASE_URL}/posts/${postId}`, draftPost);
-            navigate("/admin/article/mgt");
-        } catch (error) {
-            alert(error.response?.data?.message || "Failed to save draft");
-        }
-    }
+  function handleSaveDraft() {
+    savePost(1);
+  }
     
     return(
         <>
+
+<input
+    ref={fileInputRef}
+    type="file"
+    accept="image/*"
+    className="hidden"
+    onChange={handleImageSelect}
+/>
 
 <div className="bg-[#FAF8F5]">
 
@@ -211,13 +233,15 @@ function ArticleEditPage(){
                 <button
                     type="button"
                     onClick={handleSaveDraft}
-                    className="px-6 py-2 rounded-full border border-gray-300 text-sm hover:bg-gray-50">
+                    disabled={isSaving}
+                    className="px-6 py-2 rounded-full border border-gray-300 text-sm hover:bg-gray-50 disabled:opacity-50">
                     Save as draft
                 </button>
 
                 <button
                     type="submit"
-                    className="px-6 py-2 rounded-full bg-[#26221F] text-white text-sm hover:bg-black">
+                    disabled={isSaving}
+                    className="px-6 py-2 rounded-full bg-[#26221F] text-white text-sm hover:bg-black disabled:opacity-50">
                     Save
                 </button>
 
@@ -238,8 +262,8 @@ function ArticleEditPage(){
 
                 <div
                     className="w-52 h-36 bg-[#FBFBFA] border rounded overflow-hidden flex items-center justify-center">
-                    {imageUrl ? (
-                        <img className="block w-full h-full object-cover" src={imageUrl} alt={title} />
+                    {previewImageUrl || imageUrl ? (
+                        <img className="block w-full h-full object-cover" src={previewImageUrl || imageUrl} alt={title} />
                     ) : (
                         <i data-lucide="image" className="w-7 h-7 text-gray-400"></i>
                     )}
@@ -248,6 +272,7 @@ function ArticleEditPage(){
 
                 <button
                     type="button"
+                    onClick={() => fileInputRef.current?.click()}
                     className="px-6 py-2 border rounded-full text-sm hover:bg-gray-50">
                     Upload thumbnail image
                 </button>
